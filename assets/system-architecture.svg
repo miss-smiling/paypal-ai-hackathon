@@ -1,0 +1,292 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 960" width="100%" height="100%">
+  <defs>
+    <linearGradient id="archBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070913"/>
+      <stop offset="45%" stop-color="#0d1424"/>
+      <stop offset="90%" stop-color="#140d28"/>
+      <stop offset="100%" stop-color="#080c18"/>
+    </linearGradient>
+
+    <linearGradient id="tierHeaderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="50%" stop-color="#93C5FD"/>
+      <stop offset="100%" stop-color="#C084FC"/>
+    </linearGradient>
+
+    <linearGradient id="layerBoxBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(30, 41, 59, 0.75)"/>
+      <stop offset="100%" stop-color="rgba(15, 23, 42, 0.85)"/>
+    </linearGradient>
+
+    <filter id="boxShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+
+    <pattern id="archGrid" width="35" height="35" patternUnits="userSpaceOnUse">
+      <path d="M 35 0 L 0 0 0 35" fill="none" stroke="rgba(255, 255, 255, 0.025)" stroke-width="1"/>
+      <circle cx="35" cy="35" r="1" fill="rgba(147, 197, 253, 0.1)"/>
+    </pattern>
+  </defs>
+
+  <style>
+    .sans { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', Helvetica, Arial, sans-serif; }
+    .bold { font-weight: 700; }
+    .semibold { font-weight: 600; }
+    .medium { font-weight: 500; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  </style>
+
+  <rect width="1400" height="960" fill="url(#archBg)"/>
+  <rect width="1400" height="960" fill="url(#archGrid)"/>
+  <rect width="1400" height="960" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="2"/>
+
+  <!-- TOP TITLE BAR -->
+  <g transform="translate(50, 36)">
+    <rect width="360" height="26" rx="13" fill="rgba(99, 102, 241, 0.15)" stroke="rgba(129, 140, 248, 0.4)" stroke-width="1"/>
+    <circle cx="14" cy="13" r="4" fill="#818CF8"/>
+    <text x="26" y="17" class="sans semibold mono" font-size="10" fill="#C7D2FE" letter-spacing="1">PROPOSED SYSTEM ARCHITECTURE • DESIGN SPEC</text>
+    
+    <text x="0" y="60" class="sans bold" font-size="28" fill="url(#tierHeaderGrad)" letter-spacing="-0.5">SmartCart AI Modular Architecture</text>
+    <text x="0" y="82" class="sans medium" font-size="13" fill="#94A3B8">Layered specification decoupling frontend presentation, multi-agent orchestration, LLM reasoning, and PayPal checkout</text>
+  </g>
+
+  <!-- ==================== TIER 1: FRONTEND LAYER ==================== -->
+  <g transform="translate(50, 135)" filter="url(#boxShadow)">
+    <rect width="1300" height="110" rx="14" fill="url(#layerBoxBg)" stroke="rgba(56, 189, 248, 0.35)" stroke-width="1.5"/>
+    
+    <!-- Tier Label -->
+    <rect x="18" y="12" width="220" height="22" rx="6" fill="rgba(56, 189, 248, 0.15)"/>
+    <text x="26" y="27" class="sans bold mono" font-size="10" fill="#38BDF8">TIER 1 • PRESENTATION &amp; CLIENT</text>
+    <text x="250" y="28" class="sans bold" font-size="12" fill="#E2E8F0">Next.js 14 Web App + Tailwind CSS + WebSocket Client</text>
+
+    <!-- Sub-Cards -->
+    <g transform="translate(18, 44)">
+      <!-- Card 1 -->
+      <rect width="300" height="52" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+      <text x="14" y="22" class="sans bold" font-size="12" fill="#FFFFFF">💬 Streaming Chat Drawer</text>
+      <text x="14" y="40" class="sans" font-size="10" fill="#94A3B8">Natural-language dialogue + live agent trace logs</text>
+
+      <!-- Card 2 -->
+      <g transform="translate(320, 0)">
+        <rect width="300" height="52" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+        <text x="14" y="22" class="sans bold" font-size="12" fill="#FFFFFF">⚖️ Decision &amp; Comparison Grid</text>
+        <text x="14" y="40" class="sans" font-size="10" fill="#94A3B8">Multi-metric trade-off evaluation &amp; scoring</text>
+      </g>
+
+      <!-- Card 3 -->
+      <g transform="translate(640, 0)">
+        <rect width="300" height="52" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+        <text x="14" y="22" class="sans bold" font-size="12" fill="#FFFFFF">🛒 SmartCart Drawer</text>
+        <text x="14" y="40" class="sans" font-size="10" fill="#94A3B8">Dynamic bundle discounts &amp; active coupon ledger</text>
+      </g>
+
+      <!-- Card 4 -->
+      <g transform="translate(960, 0)">
+        <rect width="300" height="52" rx="8" fill="rgba(0, 48, 135, 0.25)" stroke="rgba(0, 112, 186, 0.4)" stroke-width="1"/>
+        <text x="14" y="22" class="sans bold" font-size="12" fill="#93C5FD">💳 PayPal JS SDK Buttons</text>
+        <text x="14" y="40" class="sans" font-size="10" fill="#94A3B8">1-Click sandbox modal authorization</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Connective Arrows 1 -> 2 -->
+  <path d="M 700 245 L 700 270" stroke="#38BDF8" stroke-width="2.5" stroke-dasharray="4 4"/>
+  <polygon points="695,268 700,276 705,268" fill="#38BDF8"/>
+  <text x="715" y="262" class="sans mono" font-size="10" fill="#7DD3FC">REST / WebSocket Streaming</text>
+
+  <!-- ==================== TIER 2: API GATEWAY & SESSION HUB ==================== -->
+  <g transform="translate(50, 276)" filter="url(#boxShadow)">
+    <rect width="1300" height="90" rx="14" fill="url(#layerBoxBg)" stroke="rgba(129, 140, 248, 0.35)" stroke-width="1.5"/>
+    
+    <rect x="18" y="12" width="230" height="22" rx="6" fill="rgba(129, 140, 248, 0.15)"/>
+    <text x="26" y="27" class="sans bold mono" font-size="10" fill="#818CF8">TIER 2 • API GATEWAY &amp; BUS</text>
+    <text x="260" y="28" class="sans bold" font-size="12" fill="#E2E8F0">FastAPI Asynchronous Gateway + Python 3.11 Runtime</text>
+
+    <!-- Sub-Cards -->
+    <g transform="translate(18, 42)">
+      <rect width="400" height="36" rx="6" fill="rgba(15, 23, 42, 0.85)"/>
+      <text x="14" y="22" class="sans bold" font-size="11" fill="#FFFFFF">🚪 REST API Endpoints</text>
+      <text x="170" y="22" class="sans mono" font-size="10" fill="#818CF8">/api/chat • /api/cart • /api/checkout</text>
+
+      <g transform="translate(430, 0)">
+        <rect width="410" height="36" rx="6" fill="rgba(15, 23, 42, 0.85)"/>
+        <text x="14" y="22" class="sans bold" font-size="11" fill="#FFFFFF">⚡ WebSocket Session Hub</text>
+        <text x="185" y="22" class="sans mono" font-size="10" fill="#818CF8">Bidirectional real-time agent stream</text>
+      </g>
+
+      <g transform="translate(870, 0)">
+        <rect width="390" height="36" rx="6" fill="rgba(15, 23, 42, 0.85)"/>
+        <text x="14" y="22" class="sans bold" font-size="11" fill="#FFFFFF">🔑 Session &amp; Context Store</text>
+        <text x="185" y="22" class="sans mono" font-size="10" fill="#818CF8">Token memory &amp; state management</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Connective Arrows 2 -> 3 -->
+  <path d="M 700 366 L 700 392" stroke="#818CF8" stroke-width="2.5" stroke-dasharray="4 4"/>
+  <polygon points="695,390 700,398 705,390" fill="#818CF8"/>
+  <text x="715" y="384" class="sans mono" font-size="10" fill="#A5B4FC">Graph State Dispatch</text>
+
+  <!-- ==================== TIER 3: MULTI-AGENT ORCHESTRATION SWARM ==================== -->
+  <g transform="translate(50, 398)" filter="url(#boxShadow)">
+    <rect width="1300" height="225" rx="14" fill="url(#layerBoxBg)" stroke="rgba(192, 132, 252, 0.45)" stroke-width="1.8"/>
+    
+    <rect x="18" y="14" width="270" height="24" rx="6" fill="rgba(168, 85, 247, 0.2)"/>
+    <text x="26" y="30" class="sans bold mono" font-size="10" fill="#C084FC">TIER 3 • MULTI-AGENT SWARM (BRAIN)</text>
+    <text x="300" y="31" class="sans bold" font-size="13" fill="#FFFFFF">LangGraph Cyclic Orchestrator &amp; Specialized Autonomous Workers</text>
+
+    <!-- Master Orchestrator Banner inside Tier 3 -->
+    <g transform="translate(18, 48)">
+      <rect width="1264" height="40" rx="8" fill="rgba(99, 102, 241, 0.18)" stroke="rgba(129, 140, 248, 0.4)" stroke-width="1"/>
+      <circle cx="20" cy="20" r="8" fill="#818CF8"/>
+      <text x="16" y="24" class="sans bold" font-size="11" fill="#FFFFFF">⚡</text>
+      <text x="36" y="25" class="sans bold" font-size="13" fill="#FFFFFF">Master Agent Orchestrator</text>
+      <text x="240" y="25" class="sans" font-size="11" fill="#C7D2FE">StateGraph management • Parallel task dispatch • Cyclic feedback loops • Decision arbitration</text>
+    </g>
+
+    <!-- 6 Specialized Agent Cards -->
+    <g transform="translate(18, 102)">
+      <!-- Agent 1: Intent -->
+      <g transform="translate(0, 0)">
+        <rect width="198" height="108" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(56, 189, 248, 0.25)" stroke-width="1"/>
+        <text x="12" y="22" class="sans bold" font-size="12" fill="#38BDF8">🧠 Intent Agent</text>
+        <text x="12" y="42" class="sans" font-size="10" fill="#94A3B8">• NLP parsing</text>
+        <text x="12" y="58" class="sans" font-size="10" fill="#94A3B8">• Constraint extraction</text>
+        <text x="12" y="74" class="sans" font-size="10" fill="#94A3B8">• Budget thresholds</text>
+        <rect x="10" y="84" width="178" height="18" rx="3" fill="rgba(56, 189, 248, 0.1)"/>
+        <text x="16" y="96" class="sans mono" font-size="9" fill="#7DD3FC">Structured JSON Output</text>
+      </g>
+
+      <!-- Agent 2: Discovery -->
+      <g transform="translate(213, 0)">
+        <rect width="198" height="108" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(129, 140, 248, 0.25)" stroke-width="1"/>
+        <text x="12" y="22" class="sans bold" font-size="12" fill="#818CF8">🔍 Discovery Agent</text>
+        <text x="12" y="42" class="sans" font-size="10" fill="#94A3B8">• Semantic search</text>
+        <text x="12" y="58" class="sans" font-size="10" fill="#94A3B8">• Spec filtering</text>
+        <text x="12" y="74" class="sans" font-size="10" fill="#94A3B8">• Catalog query</text>
+        <rect x="10" y="84" width="178" height="18" rx="3" fill="rgba(129, 140, 248, 0.1)"/>
+        <text x="16" y="96" class="sans mono" font-size="9" fill="#A5B4FC">Embedding Cosine Match</text>
+      </g>
+
+      <!-- Agent 3: Price -->
+      <g transform="translate(426, 0)">
+        <rect width="198" height="108" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(245, 158, 11, 0.25)" stroke-width="1"/>
+        <text x="12" y="22" class="sans bold" font-size="12" fill="#FBBF24">🏷️ Price Agent</text>
+        <text x="12" y="42" class="sans" font-size="10" fill="#94A3B8">• Multi-vendor prices</text>
+        <text x="12" y="58" class="sans" font-size="10" fill="#94A3B8">• Coupon crawler</text>
+        <text x="12" y="74" class="sans" font-size="10" fill="#94A3B8">• Discount validator</text>
+        <rect x="10" y="84" width="178" height="18" rx="3" fill="rgba(245, 158, 11, 0.1)"/>
+        <text x="16" y="96" class="sans mono" font-size="9" fill="#FDE68A">Auto-Stack Savings</text>
+      </g>
+
+      <!-- Agent 4: Sentiment -->
+      <g transform="translate(639, 0)">
+        <rect width="198" height="108" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(16, 185, 129, 0.25)" stroke-width="1"/>
+        <text x="12" y="22" class="sans bold" font-size="12" fill="#34D399">🛡️ Sentiment Agent</text>
+        <text x="12" y="42" class="sans" font-size="10" fill="#94A3B8">• Fake review check</text>
+        <text x="12" y="58" class="sans" font-size="10" fill="#94A3B8">• Defect frequency</text>
+        <text x="12" y="74" class="sans" font-size="10" fill="#94A3B8">• Longevity score</text>
+        <rect x="10" y="84" width="178" height="18" rx="3" fill="rgba(16, 185, 129, 0.1)"/>
+        <text x="16" y="96" class="sans mono" font-size="9" fill="#6EE7B7">Trust Index Scoring</text>
+      </g>
+
+      <!-- Agent 5: Cart Optimizer -->
+      <g transform="translate(852, 0)">
+        <rect width="198" height="108" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(168, 85, 247, 0.25)" stroke-width="1"/>
+        <text x="12" y="22" class="sans bold" font-size="12" fill="#C084FC">🛒 Cart Optimizer</text>
+        <text x="12" y="42" class="sans" font-size="10" fill="#94A3B8">• Bundle incentives</text>
+        <text x="12" y="58" class="sans" font-size="10" fill="#94A3B8">• Shipping threshold</text>
+        <text x="12" y="74" class="sans" font-size="10" fill="#94A3B8">• Best-value pick</text>
+        <rect x="10" y="84" width="178" height="18" rx="3" fill="rgba(168, 85, 247, 0.1)"/>
+        <text x="16" y="96" class="sans mono" font-size="9" fill="#E9D5FF">Min Cost / Max Value</text>
+      </g>
+
+      <!-- Agent 6: Checkout -->
+      <g transform="translate(1065, 0)">
+        <rect width="198" height="108" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(0, 112, 186, 0.35)" stroke-width="1"/>
+        <text x="12" y="22" class="sans bold" font-size="12" fill="#93C5FD">💳 Checkout Agent</text>
+        <text x="12" y="42" class="sans" font-size="10" fill="#94A3B8">• Order payload prep</text>
+        <text x="12" y="58" class="sans" font-size="10" fill="#94A3B8">• PayPal SDK sync</text>
+        <text x="12" y="74" class="sans" font-size="10" fill="#94A3B8">• Webhook handler</text>
+        <rect x="10" y="84" width="178" height="18" rx="3" fill="rgba(0, 48, 135, 0.25)"/>
+        <text x="16" y="96" class="sans mono" font-size="9" fill="#BAE6FD">PayPal Orders v2</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Connective Arrows 3 -> 4 & 5 -->
+  <path d="M 350 623 L 350 655" stroke="#C084FC" stroke-width="2.5" stroke-dasharray="4 4"/>
+  <polygon points="345,653 350,661 355,653" fill="#C084FC"/>
+
+  <path d="M 1050 623 L 1050 655" stroke="#0070BA" stroke-width="2.5" stroke-dasharray="4 4"/>
+  <polygon points="1045,653 1050,661 1055,653" fill="#0070BA"/>
+
+  <!-- ==================== TIER 4 & 5: DUAL COLUMN BOTTOM TIERS ==================== -->
+  
+  <!-- LEFT COLUMN: LLM & DATA PERSISTENCE (X: 50, Width: 635) -->
+  <g transform="translate(50, 661)" filter="url(#boxShadow)">
+    <rect width="635" height="225" rx="14" fill="url(#layerBoxBg)" stroke="rgba(34, 197, 94, 0.35)" stroke-width="1.5"/>
+    
+    <rect x="18" y="14" width="250" height="24" rx="6" fill="rgba(34, 197, 94, 0.15)"/>
+    <text x="26" y="30" class="sans bold mono" font-size="10" fill="#34D399">TIER 4 • REASONING &amp; PERSISTENCE</text>
+
+    <!-- Sub-Section 1: LLM Engine -->
+    <g transform="translate(18, 48)">
+      <rect width="285" height="155" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1"/>
+      <text x="14" y="24" class="sans bold" font-size="13" fill="#FFFFFF">🧠 LLM &amp; Embeddings</text>
+      <text x="14" y="48" class="sans" font-size="11" fill="#94A3B8">• Google Gemini 1.5 Pro (Deep)</text>
+      <text x="14" y="68" class="sans" font-size="11" fill="#94A3B8">• Gemini 1.5 Flash (Fast low-latency)</text>
+      <text x="14" y="88" class="sans" font-size="11" fill="#94A3B8">• text-embedding-004 vectors</text>
+      <text x="14" y="108" class="sans" font-size="11" fill="#94A3B8">• Pydantic structured output guards</text>
+      <text x="14" y="132" class="sans bold mono" font-size="10" fill="#38BDF8">Context: 1M+ Tokens</text>
+    </g>
+
+    <!-- Sub-Section 2: Databases -->
+    <g transform="translate(320, 48)">
+      <rect width="295" height="155" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(34, 197, 94, 0.2)" stroke-width="1"/>
+      <text x="14" y="24" class="sans bold" font-size="13" fill="#FFFFFF">💾 Persistence &amp; Caching</text>
+      <text x="14" y="48" class="sans" font-size="11" fill="#94A3B8">• PostgreSQL (Users, orders, carts)</text>
+      <text x="14" y="68" class="sans" font-size="11" fill="#94A3B8">• pgvector / Qdrant (Catalog search)</text>
+      <text x="14" y="88" class="sans" font-size="11" fill="#94A3B8">• Redis (Ephemeral session state)</text>
+      <text x="14" y="108" class="sans" font-size="11" fill="#94A3B8">• Vector index cosine distance &lt; 0.15</text>
+      <text x="14" y="132" class="sans bold mono" font-size="10" fill="#34D399">Sub-10ms Lookup</text>
+    </g>
+  </g>
+
+  <!-- RIGHT COLUMN: EXTERNAL SERVICES & PAYPAL (X: 715, Width: 635) -->
+  <g transform="translate(715, 661)" filter="url(#boxShadow)">
+    <rect width="635" height="225" rx="14" fill="url(#layerBoxBg)" stroke="rgba(0, 112, 186, 0.45)" stroke-width="1.5"/>
+    
+    <rect x="18" y="14" width="280" height="24" rx="6" fill="rgba(0, 112, 186, 0.2)"/>
+    <text x="26" y="30" class="sans bold mono" font-size="10" fill="#93C5FD">TIER 5 • EXTERNAL APIS &amp; PAYPAL</text>
+
+    <!-- Sub-Section 1: External APIs -->
+    <g transform="translate(18, 48)">
+      <rect width="285" height="155" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(245, 158, 11, 0.2)" stroke-width="1"/>
+      <text x="14" y="24" class="sans bold" font-size="13" fill="#FFFFFF">🌐 External Data Sources</text>
+      <text x="14" y="48" class="sans" font-size="11" fill="#94A3B8">• E-Commerce Product Catalogs</text>
+      <text x="14" y="68" class="sans" font-size="11" fill="#94A3B8">• Retailer Price Feeds</text>
+      <text x="14" y="88" class="sans" font-size="11" fill="#94A3B8">• Coupon Repositories</text>
+      <text x="14" y="108" class="sans" font-size="11" fill="#94A3B8">• Verified Customer Review Feeds</text>
+      <text x="14" y="132" class="sans bold mono" font-size="10" fill="#FBBF24">Live Data Sync</text>
+    </g>
+
+    <!-- Sub-Section 2: PayPal Payment Sandbox -->
+    <g transform="translate(320, 48)">
+      <rect width="295" height="155" rx="8" fill="rgba(0, 48, 135, 0.3)" stroke="rgba(0, 112, 186, 0.6)" stroke-width="1.5"/>
+      <text x="14" y="24" class="sans bold" font-size="13" fill="#FFFFFF">💳 PayPal Sandbox Integration</text>
+      <text x="14" y="48" class="sans" font-size="11" fill="#93C5FD">• Orders v2 REST API</text>
+      <text x="14" y="68" class="sans" font-size="11" fill="#93C5FD">• 1-Click Smart Payment Buttons</text>
+      <text x="14" y="88" class="sans" font-size="11" fill="#93C5FD">• Webhook: PAYMENT.CAPTURE</text>
+      <text x="14" y="108" class="sans" font-size="11" fill="#93C5FD">• Buyer Protection &amp; PCI Isolation</text>
+      <text x="14" y="132" class="sans bold mono" font-size="10" fill="#38BDF8">Instant Capture Ready</text>
+    </g>
+  </g>
+
+  <!-- FOOTER -->
+  <g transform="translate(50, 915)">
+    <line x1="0" y1="0" x2="1300" y2="0" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+    <text x="0" y="24" class="sans medium" font-size="11" fill="#64748B">Proposed Architecture: Strict Isolation • Asynchronous StateGraph • Scalable Multi-Agent Topology • PayPal Sandbox Commerce</text>
+    <text x="1300" y="24" text-anchor="end" class="sans bold mono" font-size="11" fill="#818CF8">PAYPAL AI HACKATHON 2026</text>
+  </g>
+</svg>

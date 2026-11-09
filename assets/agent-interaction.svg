@@ -1,0 +1,245 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 860" width="100%" height="100%">
+  <defs>
+    <linearGradient id="aiBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080c18"/>
+      <stop offset="50%" stop-color="#0f1629"/>
+      <stop offset="100%" stop-color="#140f28"/>
+    </linearGradient>
+
+    <linearGradient id="titleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="50%" stop-color="#93C5FD"/>
+      <stop offset="100%" stop-color="#C084FC"/>
+    </linearGradient>
+
+    <filter id="msgShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+
+    <pattern id="seqGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255, 255, 255, 0.02)" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <style>
+    .sans { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', Helvetica, Arial, sans-serif; }
+    .bold { font-weight: 700; }
+    .semibold { font-weight: 600; }
+    .medium { font-weight: 500; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  </style>
+
+  <rect width="1200" height="860" fill="url(#aiBg)"/>
+  <rect width="1200" height="860" fill="url(#seqGrid)"/>
+  <rect width="1200" height="860" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="2"/>
+
+  <!-- TOP HEADER -->
+  <g transform="translate(48, 32)">
+    <rect width="320" height="26" rx="13" fill="rgba(192, 132, 252, 0.15)" stroke="rgba(192, 132, 252, 0.35)" stroke-width="1"/>
+    <circle cx="14" cy="13" r="4" fill="#C084FC"/>
+    <text x="26" y="17" class="sans semibold mono" font-size="10" fill="#E9D5FF" letter-spacing="1">INTER-AGENT TELEMETRY &amp; SEQUENCE TRACE</text>
+    
+    <text x="0" y="58" class="sans bold" font-size="28" fill="url(#titleGrad)" letter-spacing="-0.5">Multi-Agent Interaction &amp; Coordination</text>
+    <text x="0" y="80" class="sans medium" font-size="13" fill="#94A3B8">Asynchronous message exchange across orchestrator, worker swarm, and payment services</text>
+  </g>
+
+  <!-- ==================== PARTICIPANTS HEADER (5 KEY ROLES) ==================== -->
+  <!-- Columns: 
+       Col 0: Shopper (X=90)
+       Col 1: Web UI & Gateway (X=320)
+       Col 2: Orchestrator (X=560)
+       Col 3: Parallel Agent Swarm (X=840)
+       Col 4: PayPal Sandbox (X=1070)
+  -->
+
+  <!-- Lifeline Vertical Trails -->
+  <line x1="110" y1="180" x2="110" y2="780" stroke="rgba(56, 189, 248, 0.25)" stroke-width="2" stroke-dasharray="6 6"/>
+  <line x1="340" y1="180" x2="340" y2="780" stroke="rgba(129, 140, 248, 0.25)" stroke-width="2" stroke-dasharray="6 6"/>
+  <line x1="580" y1="180" x2="580" y2="780" stroke="rgba(168, 85, 247, 0.35)" stroke-width="2" stroke-dasharray="6 6"/>
+  <line x1="860" y1="180" x2="860" y2="780" stroke="rgba(52, 211, 153, 0.25)" stroke-width="2" stroke-dasharray="6 6"/>
+  <line x1="1090" y1="180" x2="1090" y2="780" stroke="rgba(0, 112, 186, 0.35)" stroke-width="2" stroke-dasharray="6 6"/>
+
+  <!-- Role Heads -->
+  <g transform="translate(0, 125)">
+    <!-- Role 1: Shopper -->
+    <g transform="translate(30, 0)">
+      <rect width="160" height="52" rx="10" fill="rgba(30, 41, 59, 0.9)" stroke="rgba(56, 189, 248, 0.5)" stroke-width="1.5"/>
+      <circle cx="28" cy="26" r="14" fill="#0284C7"/>
+      <text x="22" y="31" class="sans bold" font-size="13" fill="#FFFFFF">👤</text>
+      <text x="52" y="24" class="sans bold" font-size="12" fill="#FFFFFF">Shopper</text>
+      <text x="52" y="40" class="sans mono" font-size="9" fill="#7DD3FC">Human-in-loop</text>
+    </g>
+
+    <!-- Role 2: UI & Gateway -->
+    <g transform="translate(250, 0)">
+      <rect width="180" height="52" rx="10" fill="rgba(30, 41, 59, 0.9)" stroke="rgba(129, 140, 248, 0.5)" stroke-width="1.5"/>
+      <circle cx="28" cy="26" r="14" fill="#4F46E5"/>
+      <text x="22" y="31" class="sans bold" font-size="13" fill="#FFFFFF">🖥️</text>
+      <text x="52" y="24" class="sans bold" font-size="12" fill="#FFFFFF">UI &amp; API Gateway</text>
+      <text x="52" y="40" class="sans mono" font-size="9" fill="#A5B4FC">Next.js + FastAPI</text>
+    </g>
+
+    <!-- Role 3: Orchestrator -->
+    <g transform="translate(480, 0)">
+      <rect width="200" height="52" rx="10" fill="rgba(30, 41, 59, 0.95)" stroke="rgba(168, 85, 247, 0.7)" stroke-width="1.8"/>
+      <circle cx="28" cy="26" r="14" fill="#7C3AED"/>
+      <text x="22" y="31" class="sans bold" font-size="13" fill="#FFFFFF">⚡</text>
+      <text x="52" y="24" class="sans bold" font-size="12" fill="#FFFFFF">Master Orchestrator</text>
+      <text x="52" y="40" class="sans mono" font-size="9" fill="#C084FC">LangGraph Core</text>
+    </g>
+
+    <!-- Role 4: Parallel Swarm -->
+    <g transform="translate(750, 0)">
+      <rect width="220" height="52" rx="10" fill="rgba(30, 41, 59, 0.9)" stroke="rgba(52, 211, 153, 0.5)" stroke-width="1.5"/>
+      <circle cx="28" cy="26" r="14" fill="#059669"/>
+      <text x="22" y="31" class="sans bold" font-size="13" fill="#FFFFFF">🤖</text>
+      <text x="52" y="24" class="sans bold" font-size="12" fill="#FFFFFF">Parallel Agent Swarm</text>
+      <text x="52" y="40" class="sans mono" font-size="9" fill="#6EE7B7">Discovery, Price, Review</text>
+    </g>
+
+    <!-- Role 5: PayPal -->
+    <g transform="translate(1000, 0)">
+      <rect width="180" height="52" rx="10" fill="rgba(0, 48, 135, 0.4)" stroke="rgba(0, 112, 186, 0.7)" stroke-width="1.5"/>
+      <circle cx="28" cy="26" r="14" fill="#003087"/>
+      <text x="23" y="31" class="sans bold" font-size="13" fill="#FFFFFF">💳</text>
+      <text x="52" y="24" class="sans bold" font-size="12" fill="#FFFFFF">PayPal Sandbox</text>
+      <text x="52" y="40" class="sans mono" font-size="9" fill="#93C5FD">Orders v2 API</text>
+    </g>
+  </g>
+
+  <!-- ==================== INTERACTION STEPS ==================== -->
+
+  <!-- STEP 1: Shopper -> UI (Y=210) -->
+  <g transform="translate(110, 210)">
+    <line x1="0" y1="0" x2="230" y2="0" stroke="#38BDF8" stroke-width="2"/>
+    <polygon points="222,-4 230,0 222,4" fill="#38BDF8"/>
+    
+    <g transform="translate(15, -26)" filter="url(#msgShadow)">
+      <rect width="200" height="24" rx="4" fill="rgba(15, 23, 42, 0.9)" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1"/>
+      <text x="8" y="16" class="sans bold mono" font-size="9" fill="#38BDF8">01</text>
+      <text x="26" y="16" class="sans" font-size="10" fill="#E2E8F0">"Find ANC headphones &lt; $250"</text>
+    </g>
+  </g>
+
+  <!-- STEP 2: UI -> Orchestrator (Y=260) -->
+  <g transform="translate(340, 260)">
+    <line x1="0" y1="0" x2="240" y2="0" stroke="#818CF8" stroke-width="2"/>
+    <polygon points="232,-4 240,0 232,4" fill="#818CF8"/>
+    
+    <g transform="translate(20, -26)" filter="url(#msgShadow)">
+      <rect width="200" height="24" rx="4" fill="rgba(15, 23, 42, 0.9)" stroke="rgba(129, 140, 248, 0.3)" stroke-width="1"/>
+      <text x="8" y="16" class="sans bold mono" font-size="9" fill="#818CF8">02</text>
+      <text x="26" y="16" class="sans" font-size="10" fill="#E2E8F0">POST /api/chat/stream</text>
+    </g>
+  </g>
+
+  <!-- STEP 3: Orchestrator Intent Extraction (Self Loop Y=305) -->
+  <g transform="translate(580, 305)">
+    <path d="M 0 0 L 40 0 L 40 30 L 0 30" stroke="#C084FC" stroke-width="2" fill="none"/>
+    <polygon points="8,26 0,30 8,34" fill="#C084FC"/>
+    <g transform="translate(50, 4)">
+      <rect width="220" height="24" rx="4" fill="rgba(15, 23, 42, 0.9)" stroke="rgba(168, 85, 247, 0.3)" stroke-width="1"/>
+      <text x="8" y="16" class="sans bold mono" font-size="9" fill="#C084FC">03</text>
+      <text x="26" y="16" class="sans" font-size="10" fill="#E2E8F0">Parse {ANC=true, budget&lt;250, batt&gt;30h}</text>
+    </g>
+  </g>
+
+  <!-- STEP 4: PARALLEL AGENT SWARM EXECUTION BOX (Y=370 to 520) -->
+  <g transform="translate(520, 370)">
+    <!-- Large Parallel Bracket Box -->
+    <rect width="400" height="165" rx="12" fill="rgba(15, 23, 42, 0.75)" stroke="rgba(52, 211, 153, 0.5)" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <rect x="12" y="10" width="165" height="20" rx="4" fill="rgba(52, 211, 153, 0.2)"/>
+    <text x="18" y="24" class="sans bold mono" font-size="10" fill="#34D399">04 • PARALLEL EXECUTION</text>
+
+    <!-- Sub-Flow A: Discovery Query -->
+    <g transform="translate(60, 42)">
+      <line x1="0" y1="0" x2="280" y2="0" stroke="#38BDF8" stroke-width="1.8"/>
+      <polygon points="272,-4 280,0 272,4" fill="#38BDF8"/>
+      <text x="10" y="-8" class="sans bold" font-size="10" fill="#38BDF8">A: Discovery Agent → Vector DB search (42 models)</text>
+      <text x="10" y="16" class="sans mono" font-size="9" fill="#94A3B8">← Returns top 5 semantic candidates</text>
+    </g>
+
+    <!-- Sub-Flow B: Price & Deals -->
+    <g transform="translate(60, 84)">
+      <line x1="0" y1="0" x2="280" y2="0" stroke="#FBBF24" stroke-width="1.8"/>
+      <polygon points="272,-4 280,0 272,4" fill="#FBBF24"/>
+      <text x="10" y="-8" class="sans bold" font-size="10" fill="#FBBF24">B: Price Agent → Crawl deals &amp; valid coupons</text>
+      <text x="10" y="16" class="sans mono" font-size="9" fill="#94A3B8">← Found code 'FLYTECH25' (-$25.00)</text>
+    </g>
+
+    <!-- Sub-Flow C: Sentiment -->
+    <g transform="translate(60, 126)">
+      <line x1="0" y1="0" x2="280" y2="0" stroke="#34D399" stroke-width="1.8"/>
+      <polygon points="272,-4 280,0 272,4" fill="#34D399"/>
+      <text x="10" y="-8" class="sans bold" font-size="10" fill="#34D399">C: Sentiment Agent → Screen genuine reviews</text>
+      <text x="10" y="16" class="sans mono" font-size="9" fill="#94A3B8">← Comfort 96%, filtered 14 fake reviews</text>
+    </g>
+  </g>
+
+  <!-- STEP 5: Orchestrator -> UI (Streaming Decision Matrix Y=565) -->
+  <g transform="translate(340, 565)">
+    <line x1="240" y1="0" x2="0" y2="0" stroke="#C084FC" stroke-width="2"/>
+    <polygon points="8,-4 0,0 8,4" fill="#C084FC"/>
+    
+    <g transform="translate(25, -26)" filter="url(#msgShadow)">
+      <rect width="190" height="24" rx="4" fill="rgba(15, 23, 42, 0.9)" stroke="rgba(168, 85, 247, 0.3)" stroke-width="1"/>
+      <text x="8" y="16" class="sans bold mono" font-size="9" fill="#C084FC">05</text>
+      <text x="26" y="16" class="sans" font-size="10" fill="#E2E8F0">Stream Decision Matrix &amp; Cart</text>
+    </g>
+  </g>
+
+  <!-- STEP 6: UI Render Card (Y=610) -->
+  <g transform="translate(110, 610)">
+    <line x1="230" y1="0" x2="0" y2="0" stroke="#38BDF8" stroke-width="2"/>
+    <polygon points="8,-4 0,0 8,4" fill="#38BDF8"/>
+    
+    <g transform="translate(20, -26)" filter="url(#msgShadow)">
+      <rect width="190" height="24" rx="4" fill="rgba(15, 23, 42, 0.9)" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1"/>
+      <text x="8" y="16" class="sans bold mono" font-size="9" fill="#38BDF8">06</text>
+      <text x="26" y="16" class="sans" font-size="10" fill="#E2E8F0">Display: AeroQuiet Pro ($174)</text>
+    </g>
+  </g>
+
+  <!-- STEP 7: Shopper Clicks PayPal (Y=660) -->
+  <g transform="translate(110, 660)">
+    <line x1="0" y1="0" x2="230" y2="0" stroke="#38BDF8" stroke-width="2"/>
+    <polygon points="222,-4 230,0 222,4" fill="#38BDF8"/>
+    
+    <g transform="translate(20, -26)" filter="url(#msgShadow)">
+      <rect width="190" height="24" rx="4" fill="rgba(15, 23, 42, 0.9)" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1"/>
+      <text x="8" y="16" class="sans bold mono" font-size="9" fill="#38BDF8">07</text>
+      <text x="26" y="16" class="sans" font-size="10" fill="#E2E8F0">Click "Pay with PayPal"</text>
+    </g>
+  </g>
+
+  <!-- STEP 8: Gateway -> PayPal Create Order (Y=705) -->
+  <g transform="translate(340, 705)">
+    <line x1="0" y1="0" x2="750" y2="0" stroke="#0070BA" stroke-width="2"/>
+    <polygon points="742,-4 750,0 742,4" fill="#0070BA"/>
+    
+    <g transform="translate(260, -26)" filter="url(#msgShadow)">
+      <rect width="230" height="24" rx="4" fill="rgba(0, 48, 135, 0.4)" stroke="rgba(0, 112, 186, 0.6)" stroke-width="1"/>
+      <text x="8" y="16" class="sans bold mono" font-size="9" fill="#93C5FD">08</text>
+      <text x="26" y="16" class="sans" font-size="10" fill="#FFFFFF">POST /v2/checkout/orders ($174.00)</text>
+    </g>
+  </g>
+
+  <!-- STEP 9: PayPal -> Gateway Webhook (Y=750) -->
+  <g transform="translate(340, 750)">
+    <line x1="750" y1="0" x2="0" y2="0" stroke="#10B981" stroke-width="2" stroke-dasharray="4 4"/>
+    <polygon points="8,-4 0,0 8,4" fill="#10B981"/>
+    
+    <g transform="translate(250, -26)" filter="url(#msgShadow)">
+      <rect width="250" height="24" rx="4" fill="rgba(16, 185, 129, 0.2)" stroke="rgba(16, 185, 129, 0.5)" stroke-width="1"/>
+      <text x="8" y="16" class="sans bold mono" font-size="9" fill="#34D399">09</text>
+      <text x="26" y="16" class="sans" font-size="10" fill="#FFFFFF">Webhook: PAYMENT.CAPTURE.COMPLETED</text>
+    </g>
+  </g>
+
+  <!-- FOOTER -->
+  <g transform="translate(48, 815)">
+    <line x1="0" y1="0" x2="1104" y2="0" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+    <text x="0" y="24" class="sans medium" font-size="11" fill="#64748B">Coordination Protocol: Event-driven execution • Async worker barrier • Pydantic schema validation • PayPal REST SDK</text>
+    <text x="1104" y="24" text-anchor="end" class="sans bold mono" font-size="11" fill="#C084FC">PAYPAL AI HACKATHON 2026</text>
+  </g>
+</svg>

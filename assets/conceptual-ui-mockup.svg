@@ -1,0 +1,270 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 640" width="100%" height="100%">
+  <defs>
+    <linearGradient id="mockupBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090D1A"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+
+    <linearGradient id="panelBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(30, 41, 59, 0.7)"/>
+      <stop offset="100%" stop-color="rgba(15, 23, 42, 0.8)"/>
+    </linearGradient>
+
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#818CF8"/>
+    </linearGradient>
+
+    <filter id="mShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <style>
+    .font-sans { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', Helvetica, Arial, sans-serif; }
+    .bold { font-weight: 700; }
+    .semibold { font-weight: 600; }
+    .medium { font-weight: 500; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  </style>
+
+  <!-- Canvas Background -->
+  <rect width="1100" height="640" rx="16" fill="url(#mockupBg)"/>
+  <rect width="1100" height="640" rx="16" fill="none" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1.5"/>
+
+  <!-- Conceptual Watermark Warning Header -->
+  <g transform="translate(0, 0)">
+    <rect width="1100" height="34" rx="16 16 0 0" fill="rgba(245, 158, 11, 0.15)"/>
+    <rect width="1100" height="34" fill="none" stroke="rgba(245, 158, 11, 0.3)" stroke-width="1"/>
+    <circle cx="28" cy="17" r="4" fill="#F59E0B"/>
+    <text x="42" y="21" class="font-sans bold mono" font-size="11" fill="#FBBF24" letter-spacing="1">CONCEPTUAL UI WIREFRAME • ARCHITECTURAL PROPOSAL ONLY (PRE-IMPLEMENTATION PHASE)</text>
+  </g>
+
+  <!-- Application Navbar -->
+  <g transform="translate(24, 48)">
+    <rect width="1052" height="52" rx="10" fill="rgba(30, 41, 59, 0.8)" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+    
+    <!-- App Logo -->
+    <text x="20" y="32" class="font-sans bold" font-size="18" fill="url(#blueGrad)">SmartCart AI</text>
+    <rect x="145" y="15" width="70" height="22" rx="6" fill="rgba(56, 189, 248, 0.15)"/>
+    <text x="154" y="30" class="font-sans bold mono" font-size="9" fill="#38BDF8">v0.1-DRAFT</text>
+
+    <!-- Search / Intent Bar -->
+    <g transform="translate(240, 10)">
+      <rect width="520" height="32" rx="8" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(56, 189, 248, 0.25)" stroke-width="1"/>
+      <circle cx="18" cy="16" r="4" fill="none" stroke="#64748B" stroke-width="1.5"/>
+      <line x1="21" y1="19" x2="25" y2="23" stroke="#64748B" stroke-width="1.5"/>
+      <text x="34" y="21" class="font-sans" font-size="12" fill="#E2E8F0">"Find travel noise-cancelling headphones under $250 with 30h+ battery"</text>
+    </g>
+
+    <!-- Top Status Badges -->
+    <g transform="translate(790, 14)">
+      <rect width="120" height="24" rx="6" fill="rgba(16, 185, 129, 0.15)" stroke="rgba(16, 185, 129, 0.3)" stroke-width="1"/>
+      <circle cx="12" cy="12" r="3" fill="#10B981"/>
+      <text x="22" y="16" class="font-sans bold" font-size="10" fill="#34D399">4 Agents Ready</text>
+    </g>
+
+    <!-- Mini Cart Pill -->
+    <g transform="translate(930, 12)">
+      <rect width="102" height="28" rx="8" fill="#1E293B" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1"/>
+      <text x="16" y="18" class="font-sans bold" font-size="11" fill="#FFFFFF">🛒 Cart: $174</text>
+    </g>
+  </g>
+
+  <!-- MAIN BODY LAYOUT (TWO PANELS) -->
+
+  <!-- LEFT PANEL: Conversational Agent Drawer (Width: 360) -->
+  <g transform="translate(24, 116)" filter="url(#mShadow)">
+    <rect width="360" height="495" rx="12" fill="url(#panelBg)" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+    
+    <!-- Drawer Title -->
+    <g transform="translate(18, 18)">
+      <circle cx="6" cy="6" r="6" fill="#8B5CF6"/>
+      <text x="20" y="10" class="font-sans bold" font-size="13" fill="#FFFFFF">Autonomous Agent Chat</text>
+      <text x="20" y="25" class="font-sans" font-size="10" fill="#94A3B8">Context-aware conversational advisor</text>
+    </g>
+
+    <line x1="18" y1="52" x2="342" y2="52" stroke="rgba(255, 255, 255, 0.06)" stroke-width="1"/>
+
+    <!-- Message 1: Agent Welcome -->
+    <g transform="translate(18, 64)">
+      <rect width="324" height="48" rx="8" fill="rgba(15, 23, 42, 0.7)"/>
+      <text x="12" y="18" class="font-sans bold" font-size="10" fill="#C084FC">SmartCart Orchestrator</text>
+      <text x="12" y="34" class="font-sans" font-size="11" fill="#CBD5E1">I'm ready. Describe your need, budget, or preferred brands.</text>
+    </g>
+
+    <!-- Message 2: User Prompt -->
+    <g transform="translate(42, 122)">
+      <rect width="300" height="54" rx="8" fill="rgba(59, 130, 246, 0.15)" stroke="rgba(59, 130, 246, 0.3)" stroke-width="1"/>
+      <text x="12" y="18" class="font-sans bold" font-size="10" fill="#93C5FD">You</text>
+      <text x="12" y="34" class="font-sans" font-size="11" fill="#FFFFFF">Find noise-cancelling headphones for long</text>
+      <text x="12" y="48" class="font-sans" font-size="11" fill="#FFFFFF">flights under $250. Long battery is top priority.</text>
+    </g>
+
+    <!-- Message 3: Agent Response -->
+    <g transform="translate(18, 186)">
+      <rect width="324" height="96" rx="8" fill="rgba(15, 23, 42, 0.7)"/>
+      <text x="12" y="18" class="font-sans bold" font-size="10" fill="#C084FC">SmartCart Orchestrator</text>
+      <text x="12" y="34" class="font-sans" font-size="11" fill="#CBD5E1">Scanned 42 models matching your constraints.</text>
+      <text x="12" y="50" class="font-sans" font-size="11" fill="#CBD5E1">Top recommendation: AeroQuiet Pro (42h battery,</text>
+      <text x="12" y="66" class="font-sans" font-size="11" fill="#CBD5E1">98% verified comfort). Auto-applied coupon</text>
+      <text x="12" y="82" class="font-sans bold" font-size="11" fill="#34D399">'FLYTECH25' saves you an extra $25!</text>
+    </g>
+
+    <!-- Live Agent Telemetry Stream -->
+    <g transform="translate(18, 296)">
+      <rect width="324" height="135" rx="8" fill="rgba(2, 6, 23, 0.7)" stroke="rgba(255, 255, 255, 0.05)" stroke-width="1"/>
+      <text x="12" y="18" class="font-sans bold mono" font-size="10" fill="#64748B">AGENT EXECUTION TRACE</text>
+      
+      <!-- Trace item 1 -->
+      <circle cx="16" cy="36" r="3" fill="#10B981"/>
+      <text x="26" y="39" class="font-sans mono" font-size="10" fill="#94A3B8">Intent: parsed [ANC=true, budget&lt;250]</text>
+
+      <!-- Trace item 2 -->
+      <circle cx="16" cy="56" r="3" fill="#10B981"/>
+      <text x="26" y="59" class="font-sans mono" font-size="10" fill="#94A3B8">Catalog: 42 candidates retrieved</text>
+
+      <!-- Trace item 3 -->
+      <circle cx="16" cy="76" r="3" fill="#10B981"/>
+      <text x="26" y="79" class="font-sans mono" font-size="10" fill="#94A3B8">Sentiment: filtered 12 fake review sets</text>
+
+      <!-- Trace item 4 -->
+      <circle cx="16" cy="96" r="3" fill="#10B981"/>
+      <text x="26" y="99" class="font-sans mono" font-size="10" fill="#94A3B8">Optimizer: code 'FLYTECH25' valid</text>
+
+      <!-- Trace item 5 -->
+      <circle cx="16" cy="116" r="3" fill="#38BDF8"/>
+      <text x="26" y="119" class="font-sans mono" font-size="10" fill="#38BDF8">Checkout: PayPal sandbox ready</text>
+    </g>
+
+    <!-- Chat Input Placeholder -->
+    <g transform="translate(18, 442)">
+      <rect width="324" height="38" rx="8" fill="rgba(15, 23, 42, 0.9)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+      <text x="14" y="24" class="font-sans" font-size="11" fill="#64748B">Ask a follow-up or refine budget...</text>
+    </g>
+  </g>
+
+  <!-- RIGHT PANEL: Comparison Matrix & SmartCart Checkout (Width: 672) -->
+  <g transform="translate(404, 116)" filter="url(#mShadow)">
+    <rect width="672" height="495" rx="12" fill="url(#panelBg)" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+
+    <!-- Top Bar: Recommendations Header -->
+    <g transform="translate(20, 18)">
+      <text class="font-sans bold" font-size="14" fill="#FFFFFF">AI-Curated Product Comparison &amp; Decision Matrix</text>
+      <text x="0" y="16" class="font-sans" font-size="11" fill="#94A3B8">Ranked objectively across price, genuine reviews, battery performance &amp; travel ergonomics</text>
+    </g>
+
+    <!-- PRODUCT CANDIDATE CARDS -->
+    <g transform="translate(20, 52)">
+      <!-- Card 1: Top Recommendation -->
+      <g transform="translate(0, 0)">
+        <rect width="310" height="210" rx="10" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(16, 185, 129, 0.5)" stroke-width="1.5"/>
+        <rect x="12" y="12" width="130" height="20" rx="4" fill="rgba(16, 185, 129, 0.2)"/>
+        <text x="18" y="26" class="font-sans bold" font-size="9" fill="#34D399">★ TOP VALUE MATCH (98%)</text>
+        
+        <text x="12" y="54" class="font-sans bold" font-size="14" fill="#FFFFFF">AeroQuiet Pro ANC</text>
+        <text x="12" y="70" class="font-sans" font-size="11" fill="#94A3B8">Premium Hybrid Active Noise Cancellation</text>
+
+        <!-- Metric Grid -->
+        <g transform="translate(12, 85)">
+          <text x="0" y="12" class="font-sans" font-size="10" fill="#64748B">Battery Life:</text>
+          <text x="90" y="12" class="font-sans bold" font-size="10" fill="#FFFFFF">42 Hours</text>
+
+          <text x="0" y="28" class="font-sans" font-size="10" fill="#64748B">ANC Strength:</text>
+          <text x="90" y="28" class="font-sans bold" font-size="10" fill="#38BDF8">4.9 / 5.0 (Flight-Grade)</text>
+
+          <text x="0" y="44" class="font-sans" font-size="10" fill="#64748B">Weight &amp; Fit:</text>
+          <text x="90" y="44" class="font-sans bold" font-size="10" fill="#FFFFFF">235g (Memory Foam)</text>
+
+          <text x="0" y="60" class="font-sans" font-size="10" fill="#64748B">Sentiment Score:</text>
+          <text x="90" y="60" class="font-sans bold" font-size="10" fill="#34D399">96% Positive (2.4k revs)</text>
+        </g>
+
+        <!-- Pricing Tag -->
+        <g transform="translate(12, 165)">
+          <text x="0" y="18" class="font-sans bold" font-size="18" fill="#34D399">$199.00</text>
+          <text x="75" y="18" class="font-sans" font-size="11" fill="#64748B" text-decoration="line-through">$269.00</text>
+          <rect x="180" y="2" width="105" height="24" rx="6" fill="#2563EB"/>
+          <text x="232" y="17" text-anchor="middle" class="font-sans bold" font-size="10" fill="#FFFFFF">✓ In SmartCart</text>
+        </g>
+      </g>
+
+      <!-- Card 2: Runner Up -->
+      <g transform="translate(322, 0)">
+        <rect width="310" height="210" rx="10" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+        <rect x="12" y="12" width="120" height="20" rx="4" fill="rgba(148, 163, 184, 0.15)"/>
+        <text x="18" y="26" class="font-sans bold" font-size="9" fill="#CBD5E1">RUNNER UP (91%)</text>
+        
+        <text x="12" y="54" class="font-sans bold" font-size="14" fill="#FFFFFF">SoundStream Nomad X</text>
+        <text x="12" y="70" class="font-sans" font-size="11" fill="#94A3B8">Ultra-Compact Foldable ANC</text>
+
+        <!-- Metric Grid -->
+        <g transform="translate(12, 85)">
+          <text x="0" y="12" class="font-sans" font-size="10" fill="#64748B">Battery Life:</text>
+          <text x="90" y="12" class="font-sans bold" font-size="10" fill="#FFFFFF">32 Hours</text>
+
+          <text x="0" y="28" class="font-sans" font-size="10" fill="#64748B">ANC Strength:</text>
+          <text x="90" y="28" class="font-sans bold" font-size="10" fill="#94A3B8">4.4 / 5.0 (Standard)</text>
+
+          <text x="0" y="44" class="font-sans" font-size="10" fill="#64748B">Weight &amp; Fit:</text>
+          <text x="90" y="44" class="font-sans bold" font-size="10" fill="#FFFFFF">260g (Foldable)</text>
+
+          <text x="0" y="60" class="font-sans" font-size="10" fill="#64748B">Sentiment Score:</text>
+          <text x="90" y="60" class="font-sans bold" font-size="10" fill="#94A3B8">89% Positive (1.1k revs)</text>
+        </g>
+
+        <!-- Pricing Tag -->
+        <g transform="translate(12, 165)">
+          <text x="0" y="18" class="font-sans bold" font-size="18" fill="#FFFFFF">$179.00</text>
+          <text x="75" y="18" class="font-sans" font-size="11" fill="#64748B" text-decoration="line-through">$219.00</text>
+          <rect x="180" y="2" width="105" height="24" rx="6" fill="rgba(255, 255, 255, 0.08)"/>
+          <text x="232" y="17" text-anchor="middle" class="font-sans" font-size="10" fill="#94A3B8">+ Swap Option</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- SMARTCART OPTIMIZATION & PAYPAL CHECKOUT SECTION -->
+    <g transform="translate(20, 276)">
+      <rect width="632" height="195" rx="10" fill="rgba(15, 23, 42, 0.95)" stroke="rgba(56, 189, 248, 0.25)" stroke-width="1.2"/>
+      
+      <!-- Section Header -->
+      <g transform="translate(16, 14)">
+        <text class="font-sans bold" font-size="12" fill="#38BDF8">SMARTCART DYNAMIC VALUE OPTIMIZATION</text>
+        <text x="0" y="16" class="font-sans" font-size="10" fill="#94A3B8">Automated bundle incentives, coupon crawling, and shipping consolidation</text>
+      </g>
+
+      <!-- Ledger Summary (Left side) -->
+      <g transform="translate(16, 52)">
+        <text x="0" y="14" class="font-sans" font-size="11" fill="#94A3B8">Selected Item (AeroQuiet Pro ANC):</text>
+        <text x="260" y="14" text-anchor="end" class="font-sans" font-size="11" fill="#FFFFFF">$199.00</text>
+
+        <text x="0" y="32" class="font-sans" font-size="11" fill="#34D399">Auto-Coupon (FLYTECH25 applied):</text>
+        <text x="260" y="32" text-anchor="end" class="font-sans bold" font-size="11" fill="#34D399">-$25.00</text>
+
+        <text x="0" y="50" class="font-sans" font-size="11" fill="#94A3B8">Consolidated Fast Shipping:</text>
+        <text x="260" y="50" text-anchor="end" class="font-sans" font-size="11" fill="#34D399">FREE ($0.00)</text>
+
+        <line x1="0" y1="62" x2="260" y2="62" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+
+        <text x="0" y="82" class="font-sans bold" font-size="13" fill="#FFFFFF">Optimized Total:</text>
+        <text x="260" y="82" text-anchor="end" class="font-sans bold" font-size="18" fill="#34D399">$174.00</text>
+        <text x="0" y="100" class="font-sans bold" font-size="10" fill="#FBBF24">Total Saved by SmartCart AI: $95.00 vs Original MSRP</text>
+      </g>
+
+      <!-- PayPal Checkout Proposed Box (Right side) -->
+      <g transform="translate(320, 48)">
+        <rect width="295" height="130" rx="8" fill="rgba(0, 48, 135, 0.2)" stroke="rgba(0, 112, 186, 0.5)" stroke-width="1"/>
+        <text x="16" y="24" class="font-sans bold" font-size="12" fill="#FFFFFF">1-Click Express Payment (Proposed)</text>
+        <text x="16" y="40" class="font-sans" font-size="10" fill="#93C5FD">Seamless checkout via PayPal sandbox API</text>
+
+        <!-- PayPal Button Mockup -->
+        <g transform="translate(16, 54)">
+          <rect width="263" height="38" rx="19" fill="#FFC439"/>
+          <text x="131" y="24" text-anchor="middle" class="font-sans bold" font-size="14" fill="#003087">Pay with PayPal</text>
+        </g>
+
+        <text x="147" y="112" text-anchor="middle" class="font-sans" font-size="9" fill="#64748B">🔒 Encrypted • Buyer Protection Eligible</text>
+      </g>
+    </g>
+  </g>
+</svg>

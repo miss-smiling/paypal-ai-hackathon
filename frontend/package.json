@@ -1,0 +1,27 @@
+{
+  "name": "smartcart-ai-web",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^16.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.7.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "10.4.20",
+    "postcss": "8.5.32",
+    "tailwindcss": "3.4.14",
+    "typescript": "5.6.3"
+  },
+  "overrides": {
+    "postcss": "8.5.32"
+  }
+}

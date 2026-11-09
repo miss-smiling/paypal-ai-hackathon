@@ -1,0 +1,27 @@
+# Render blueprint for the FastAPI backend.
+# Render -> New -> Blueprint -> connect the GitHub repo.
+services:
+  - type: web
+    name: smartcart-api
+    runtime: python
+    rootDir: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: DATABASE_URL
+        sync: false   # paste the Neon PostgreSQL connection string in the Render dashboard
+      - key: ALLOWED_ORIGINS
+        sync: false   # e.g. https://smartcart-ai.vercel.app
+      - key: GEMINI_API_KEY
+        sync: false   # team-shared, set in the dashboard only
+      - key: PAYPAL_CLIENT_ID
+        sync: false   # team-shared sandbox credentials
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      - key: PAYPAL_ENV
+        value: sandbox

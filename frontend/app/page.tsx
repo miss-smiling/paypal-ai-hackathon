@@ -168,9 +168,15 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-6xl px-4 pb-16">
       <header className="pt-10">
-        <h1 className="text-3xl font-bold tracking-tight">SmartCart AI</h1>
-        <p className="mt-1 text-slate-600">
-          Tell us what you need. We compare, verify and build your cart, then check out with PayPal.
+        <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/80 bg-blue-50/80 px-3.5 py-1 text-xs font-semibold text-brand-dark mb-3 shadow-2xs">
+          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          PayPal AI Hackathon 2026 · Autonomous Multi-Agent Commerce
+        </div>
+        <h1 className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">
+          SmartCart <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-dark">AI</span>
+        </h1>
+        <p className="mt-2 text-base text-slate-600 max-w-2xl">
+          Describe what you need in plain English. Autonomous specialist agents discover products across Indian stores, verify review trust, optimize pricing, and check out with PayPal.
         </p>
       </header>
 

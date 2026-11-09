@@ -40,24 +40,27 @@ export default function CartPanel({
       <h2 className="text-lg font-semibold">SmartCart</h2>
 
       <div className="mt-3 space-y-2 text-sm">
-        <div className="space-y-2 border-b border-slate-100 pb-3">
+        <div className="space-y-2.5 border-b border-slate-100 pb-3">
           {ledger.items.map((item) => (
-            <div key={item.id} className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="h-10 w-10 shrink-0 rounded-lg object-cover border border-slate-200"
-                  />
-                ) : (
-                  <div className="h-10 w-10 shrink-0 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-xs">
-                    Cart
-                  </div>
-                )}
-                <span className="truncate font-medium text-slate-800">{item.name}</span>
+            <div key={item.id} className="flex items-center justify-between gap-3 p-2 rounded-xl bg-slate-50/70 border border-slate-100">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-12 w-12 shrink-0 rounded-lg bg-white p-1 border border-slate-200/80 flex items-center justify-center overflow-hidden shadow-2xs">
+                  {item.image_url ? (
+                    <img
+                      src={item.image_url}
+                      alt={item.name}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-[10px] text-slate-400 font-medium">Item</span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-slate-900 text-sm">{item.name}</p>
+                  <p className="text-xs text-slate-500">Qty: 1 · Verified Item</p>
+                </div>
               </div>
-              <span className="shrink-0 font-semibold text-slate-900">{money(item.price, ledger.currency)}</span>
+              <span className="shrink-0 font-bold text-slate-900 text-sm">{money(item.price, ledger.currency)}</span>
             </div>
           ))}
         </div>

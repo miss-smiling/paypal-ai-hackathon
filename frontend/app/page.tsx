@@ -10,9 +10,10 @@ import type { CreatedOrder, Insights, Order, SearchResult } from "@/lib/types";
 
 const SESSION_KEY = "smartcart_session_id";
 const EXAMPLES = [
-  "Find 65W GaN travel charger under $40",
-  "ANC headphones under $250 with 30h battery",
-  "Laptop backpack 25L under $80",
+  { label: "⚡ 65W GaN Charger under $40", query: "Find 65W GaN travel charger under $40" },
+  { label: "🎧 ANC Headphones under $250", query: "ANC headphones under $250 with 30h battery" },
+  { label: "🎒 Laptop Backpack 25L under $80", query: "Laptop backpack 25L under $80" },
+  { label: "⌨️ Mechanical Keyboard under $100", query: "Mechanical keyboard under $100" },
 ];
 
 function newId(): string {
@@ -204,14 +205,15 @@ export default function Home() {
       <div className="mt-3 flex flex-wrap gap-2">
         {EXAMPLES.map((ex) => (
           <button
-            key={ex}
+            key={ex.query}
+            type="button"
             onClick={() => {
-              setQuery(ex);
-              runSearch(ex);
+              setQuery(ex.query);
+              runSearch(ex.query);
             }}
-            className="rounded-full border border-slate-300 bg-white px-3 py-1 text-sm text-brand hover:bg-brand-light"
+            className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-700 shadow-xs hover:border-brand hover:bg-brand/5 hover:text-brand transition-all"
           >
-            {ex}
+            {ex.label}
           </button>
         ))}
       </div>

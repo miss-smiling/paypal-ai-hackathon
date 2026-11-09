@@ -39,49 +39,88 @@ export default function DecisionMatrix({ matrix, topPick, alternatives, budgetNo
           return (
             <article
               key={p.id}
-              className={`relative rounded-2xl border bg-white p-4 shadow-sm ${
-                isTop ? "border-2 border-brand" : "border-slate-200"
+              className={`relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-200 hover:shadow-md ${
+                isTop ? "border-2 border-brand ring-2 ring-brand/10" : "border-slate-200"
               }`}
             >
               {isTop && (
-                <span className="absolute -top-3 right-4 rounded-full bg-brand px-2 py-0.5 text-xs font-medium text-white">
-                  Top value match
+                <span className="absolute top-3 right-3 z-10 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white shadow-md">
+                  ★ Top value match
                 </span>
               )}
-              <h3 className="font-semibold leading-snug">{p.name}</h3>
-              <p className="mt-1 text-xl font-bold">{money(p.price)}</p>
-              <p className="text-sm text-slate-500">
-                {p.brand} · {row.avg_rating ?? "n/a"}★ from verified buyers
-              </p>
-              <p className="mt-2 text-sm">Spec match: {Math.round(row.match_score * 100)}%</p>
-              <p className={`text-sm font-semibold ${trustTone(row.trust_score)}`}>
-                Trust score: {row.trust_score}/100
-              </p>
-              {row.missed.length > 0 && (
-                <p className="mt-1 text-sm text-red-600">
-                  Missing: {row.missed.map((m) => m.replace(/_/g, " ")).join(", ")}
-                </p>
+              {p.image_url && (
+                <div className="relative h-48 w-full overflow-hidden bg-slate-100">
+                  <img
+                    src={p.image_url}
+                    alt={p.name}
+                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
               )}
-              {row.flagged_reviews > 0 && (
-                <p className="mt-1 text-xs text-slate-500">
-                  {row.flagged_reviews} suspicious review(s) removed
-                </p>
-              )}
+              <div className="flex flex-1 flex-col p-4">
+                <div className="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <span>{p.brand}</span>
+                  <span>•</span>
+                  <span className="text-amber-600 font-semibold">{row.avg_rating ?? "n/a"} ★</span>
+                </div>
+                <h3 className="mt-1 font-semibold leading-snug text-slate-900">{p.name}</h3>
+                <div className="mt-2 flex items-baseline justify-between">
+                  <p className="text-2xl font-bold text-slate-900">{money(p.price)}</p>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                    row.trust_score >= 75 ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                    row.trust_score >= 50 ? "bg-amber-50 text-amber-700 border border-amber-200" :
+                    "bg-red-50 text-red-700 border border-red-200"
+                  }`}>
+                    Trust {row.trust_score}/100
+                  </span>
+                </div>
+
+                <div className="mt-3 space-y-1.5 border-t border-slate-100 pt-3 text-xs text-slate-600">
+                  <div className="flex justify-between">
+                    <span>Spec match:</span>
+                    <span className="font-semibold text-slate-800">{Math.round(row.match_score * 100)}%</span>
+                  </div>
+                  {row.flagged_reviews > 0 && (
+                    <p className="text-amber-700 font-medium">
+                      🛡️ {row.flagged_reviews} suspicious review(s) pruned
+                    </p>
+                  )}
+                  {row.missed.length > 0 && (
+                    <p className="text-red-600">
+                      Missing: {row.missed.map((m) => m.replace(/_/g, " ")).join(", ")}
+                    </p>
+                  )}
+                </div>
+              </div>
             </article>
           );
         })}
       </div>
 
       {alternatives.length > 0 && (
-        <div>
-          <h3 className="font-semibold">Cheaper alternatives that fit your budget</h3>
-          <ul className="mt-2 list-inside list-disc text-sm text-slate-700">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <h3 className="font-semibold text-slate-800">Cheaper alternatives that fit your budget</h3>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {alternatives.map((a) => (
-              <li key={a.product.id}>
-                {a.product.name} · {money(a.product.price)}
-              </li>
+              <div
+                key={a.product.id}
+                className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-xs"
+              >
+                {a.product.image_url && (
+                  <img
+                    src={a.product.image_url}
+                    alt={a.product.name}
+                    className="h-12 w-12 rounded-lg object-cover border border-slate-100"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-900">{a.product.name}</p>
+                  <p className="text-xs font-bold text-emerald-700">{money(a.product.price)}</p>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </section>

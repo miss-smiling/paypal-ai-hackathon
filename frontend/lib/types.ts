@@ -6,6 +6,7 @@ export type Product = {
   price: number;
   rating: number;
   specs: Record<string, unknown>;
+  image_url?: string;
 };
 
 export type MatrixRow = {
@@ -21,7 +22,7 @@ export type MatrixRow = {
 };
 
 export type Ledger = {
-  items: { id: string; name: string; price: number }[];
+  items: { id: string; name: string; price: number; image_url?: string }[];
   subtotal: number;
   coupon: { code: string; saving: number; description: string } | null;
   discount: number;

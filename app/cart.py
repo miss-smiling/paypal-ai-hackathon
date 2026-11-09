@@ -35,7 +35,15 @@ def build_ledger(products: list[dict], coupon_code: str | None = None) -> dict:
     total = round(after_discount + shipping, 2)
 
     return {
-        "items": [{"id": p["id"], "name": p["name"], "price": p["price"]} for p in products],
+        "items": [
+            {
+                "id": p["id"],
+                "name": p["name"],
+                "price": p["price"],
+                "image_url": p.get("image_url"),
+            }
+            for p in products
+        ],
         "subtotal": subtotal,
         "coupon": coupon,
         "discount": discount,

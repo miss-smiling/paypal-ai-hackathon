@@ -44,10 +44,11 @@ export const api = {
 
   createOrder: (
     sessionId: string,
-    productId: string,
+    productId: string | null,
     couponCode: string | null,
     approved: boolean,
     idempotencyKey: string,
+    productIds?: string[],
   ) =>
     request<CreatedOrder>("/api/checkout/create-order", {
       method: "POST",
@@ -55,6 +56,7 @@ export const api = {
       body: JSON.stringify({
         session_id: sessionId,
         product_id: productId,
+        product_ids: productIds,
         coupon_code: couponCode,
         approved,
       }),

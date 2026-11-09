@@ -57,7 +57,8 @@ class BudgetRequest(BaseModel):
 
 class CreateOrderRequest(BaseModel):
     session_id: str = Field(min_length=8, max_length=64)
-    product_id: str
+    product_id: str | None = None
+    product_ids: list[str] | None = None
     coupon_code: str | None = None
     approved: bool = False  # the shopper must explicitly approve the payment
 
@@ -111,6 +112,7 @@ async def create_order(
             db,
             session_id=req.session_id,
             product_id=req.product_id,
+            product_ids=req.product_ids,
             coupon_code=req.coupon_code,
             approved=req.approved,
             idempotency_key=idempotency_key,

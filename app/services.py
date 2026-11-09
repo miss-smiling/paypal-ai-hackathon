@@ -61,19 +61,31 @@ def record_run(db: Session, session_id: str, query: str, result: dict) -> None:
     db.commit()
 
 
-async def create_checkout(db: Session, *, session_id: str, product_id: str,
-                                coupon_code: str | None, approved: bool,
+async def create_checkout(db: Session, *, session_id: str,
+                                product_id: str | None = None,
+                                product_ids: list[str] | None = None,
+                                coupon_code: str | None = None, approved: bool = False,
                                 idempotency_key: str) -> dict:
     existing = db.scalar(select(Order).where(Order.idempotency_key == idempotency_key))
     if existing:
         return _order_view(existing, replayed=True)
 
-    product = get_product(product_id)
-    if product is None:
-        raise NotFound("Unknown product")
+    items = []
+    if product_ids:
+        for pid in product_ids:
+            p = get_product(pid)
+            if p:
+                items.append(p)
+    elif product_id:
+        p = get_product(product_id)
+        if p:
+            items.append(p)
+
+    if not items:
+        raise NotFound("Unknown product(s)")
 
     shopping = ensure_session(db, session_id)
-    ledger = build_ledger([product], coupon_code)
+    ledger = build_ledger(items, coupon_code)
 
     window_start = recent_window_start()
     recent = sum(1 for o in _session_orders(db, session_id) if _aware(o.created_at) >= window_start)
@@ -88,15 +100,19 @@ async def create_checkout(db: Session, *, session_id: str, product_id: str,
     if risk["level"] == "block":
         raise CheckoutBlocked(risk["reasons"] or ["Payment blocked by risk check"])
 
+    ref_id = items[0]["id"] if len(items) == 1 else f"bundle-{len(items)}"
+    prod_names = ", ".join(i["name"] for i in items[:2]) + (f" + {len(items)-2} more" if len(items) > 2 else "")
+    primary_category = items[0]["category"] if len(items) == 1 else "bundle"
+
     paypal_order = await paypal.create_order(
-        ledger["total"], ledger["currency"], product_id, request_id=idempotency_key)
+        ledger["total"], ledger["currency"], ref_id, request_id=idempotency_key)
 
     order = Order(
         id=paypal_order["id"],
         session_id=session_id,
-        product_id=product["id"],
-        product_name=product["name"],
-        category=product["category"],
+        product_id=ref_id,
+        product_name=prod_names,
+        category=primary_category,
         amount=ledger["total"],
         currency=ledger["currency"],
         status=paypal_order["status"],

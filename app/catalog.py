@@ -65,6 +65,33 @@ PRODUCTS: list[dict] = [
      "category": "backpack", "price": 39.00,
      "specs": {"capacity_l": 12, "laptop": False}, "rating": 4.2, "stock": True,
      "image_url": "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=600&q=80"},
+
+    # --- Top Deals of the Day (Indian Market) ---
+    {"id": "deal-boat-480", "name": "boAt Rockerz 480 ANC Wireless Headphones", "brand": "Flipkart",
+     "category": "headphones", "price": 1899.00,
+     "specs": {"anc": True, "battery_h": 30, "merchant": "Flipkart", "original_price": 3990.0},
+     "rating": 4.5, "stock": True,
+     "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTx77ytcs2LUuKDE2wewZHFhzGjGcZxDLCdGZ5nt0Tuec3mbEH46PFdvPDSIIN0lWbVT7JjIUlV0NVOPzLTo91fb_NwCRBA7lKpOmhL3L92Y2qKTHqqyS_Cnw"},
+    {"id": "deal-ambrane-65w", "name": "Ambrane 65W GaN Fast Charger (3 Ports)", "brand": "Amazon.in",
+     "category": "charger", "price": 1799.00,
+     "specs": {"watts": 65, "gan": True, "ports": 3, "merchant": "Amazon.in", "original_price": 3499.0},
+     "rating": 4.6, "stock": True,
+     "image_url": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=600&q=80"},
+    {"id": "deal-cosmic-firefly", "name": "Cosmic Byte CB-GK-16 Firefly Mechanical Keyboard", "brand": "Amazon.in",
+     "category": "keyboard", "price": 2199.00,
+     "specs": {"wireless": False, "switches": "blue", "merchant": "Amazon.in", "original_price": 3999.0},
+     "rating": 4.4, "stock": True,
+     "image_url": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80"},
+    {"id": "deal-mokobara-transit", "name": "Mokobara The Transit Workpack 25L Laptop Backpack", "brand": "Croma",
+     "category": "backpack", "price": 3999.00,
+     "specs": {"capacity_l": 25, "laptop": True, "merchant": "Croma", "original_price": 6999.0},
+     "rating": 4.8, "stock": True,
+     "image_url": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80"},
+    {"id": "deal-noise-pulse3", "name": "Noise ColorFit Pulse 3 Bluetooth Calling Smartwatch", "brand": "Reliance Digital",
+     "category": "wearables", "price": 1499.00,
+     "specs": {"display": "1.96 TFT", "merchant": "Reliance Digital", "original_price": 4999.0},
+     "rating": 4.3, "stock": True,
+     "image_url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"},
 ]
 
 # Reviews. "verified" = purchase verified. Some entries are deliberately
@@ -136,6 +163,22 @@ REVIEWS: dict[str, list[dict]] = {
     "bp-slim": [
         {"author": "city_mo", "rating": 4, "verified": True,
          "text": "Good daypack. Not for a laptop, but perfect for gym clothes."},
+    ],
+    "deal-boat-480": [
+        {"author": "rahul_v", "rating": 5, "verified": True, "text": "Bass is punchy and ANC cuts out fan noise completely. Best under 2k."},
+        {"author": "priya_s", "rating": 4, "verified": True, "text": "Comfortable ear cushions. Battery easily gives 25-30 hours."},
+    ],
+    "deal-ambrane-65w": [
+        {"author": "amit_k", "rating": 5, "verified": True, "text": "Charges my MacBook Air and iPhone simultaneously at full speed."},
+    ],
+    "deal-cosmic-firefly": [
+        {"author": "gamer_rohit", "rating": 4, "verified": True, "text": "Outemu blue clicks are very satisfying. RGB modes are great."},
+    ],
+    "deal-mokobara-transit": [
+        {"author": "ananya_d", "rating": 5, "verified": True, "text": "Premium zippers and dedicated laptop compartment. Worth the price."},
+    ],
+    "deal-noise-pulse3": [
+        {"author": "deepak_m", "rating": 4, "verified": True, "text": "Calling is clear and screen is bright enough in Delhi sunlight."},
     ],
 }
 

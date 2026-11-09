@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import operator
+import os
 from typing import Annotated, TypedDict
 
 from langgraph.graph import END, StateGraph
@@ -51,8 +52,8 @@ async def discover_node(state: PipelineState) -> dict:
     raw_query = state.get("query", "")
     candidates: list[dict] = []
 
-    # 1. Search Google Shopping India live if SerpApi is configured
-    if settings.serpapi_api_key:
+    # 1. Search Google Shopping India live if SerpApi is configured (skip during unit tests)
+    if settings.serpapi_api_key and not os.getenv("PYTEST_CURRENT_TEST"):
         try:
             from app.serp import search_indian_market
             live_prods = await search_indian_market(

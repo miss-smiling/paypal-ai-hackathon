@@ -20,7 +20,7 @@ class Settings:
         "DATABASE_URL", "sqlite:///./smartcart.db"))
     allowed_origins: list[str] = field(default_factory=lambda: _list(
         "ALLOWED_ORIGINS", "http://localhost:3000"))
-    currency: str = field(default_factory=lambda: os.getenv("CURRENCY", "USD"))
+    currency: str = field(default_factory=lambda: os.getenv("CURRENCY", "INR"))
     free_shipping_threshold: float = field(default_factory=lambda: float(
         os.getenv("FREE_SHIPPING_THRESHOLD", "35")))
     flat_shipping_fee: float = field(default_factory=lambda: float(
@@ -33,6 +33,7 @@ class Settings:
     paypal_client_id: str | None = field(default_factory=lambda: os.getenv("PAYPAL_CLIENT_ID") or None)
     paypal_client_secret: str | None = field(default_factory=lambda: os.getenv("PAYPAL_CLIENT_SECRET") or None)
     paypal_webhook_id: str | None = field(default_factory=lambda: os.getenv("PAYPAL_WEBHOOK_ID") or None)
+    serpapi_api_key: str | None = field(default_factory=lambda: os.getenv("SERPAPI_API_KEY") or None)
 
 
 settings = Settings()

@@ -40,9 +40,9 @@ def rule_parse(query: str) -> dict:
             break
 
     max_price = None
-    m = re.search(r"(?:under|below|less than|max|up to|within|<=?)\s*\$?\s*(\d+(?:\.\d+)?)", q)
+    m = re.search(r"(?:under|below|less than|max|up to|within|<=?)\s*(?:\$|₹|rs\.?|inr)?\s*(\d+(?:,\d+)*(?:\.\d+)?)", q)
     if m:
-        max_price = float(m.group(1))
+        max_price = float(m.group(1).replace(",", ""))
 
     attributes: dict = {}
     m = re.search(r"(\d+)\s*w\b", q)

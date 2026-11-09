@@ -1,6 +1,13 @@
 import type { Ledger } from "@/lib/types";
 
-function money(n: number, currency = "USD"): string {
+function money(n: number, currency = "INR"): string {
+  if (currency === "INR" || currency === "₹") {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(n);
+  }
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(n);
 }
 

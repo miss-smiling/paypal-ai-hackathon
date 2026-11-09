@@ -150,7 +150,16 @@ COUPONS: dict[str, dict] = {
 }
 
 
+LIVE_PRODUCTS: dict[str, dict] = {}
+
+
+def register_live_product(product: dict) -> None:
+    LIVE_PRODUCTS[product["id"]] = product
+
+
 def get_product(product_id: str) -> dict | None:
+    if product_id in LIVE_PRODUCTS:
+        return LIVE_PRODUCTS[product_id]
     for product in PRODUCTS:
         if product["id"] == product_id:
             return product

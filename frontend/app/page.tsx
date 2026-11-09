@@ -10,10 +10,10 @@ import type { CreatedOrder, Insights, Order, SearchResult } from "@/lib/types";
 
 const SESSION_KEY = "smartcart_session_id";
 const EXAMPLES = [
-  { label: "⚡ 65W GaN Charger under $40", query: "Find 65W GaN travel charger under $40" },
-  { label: "🎧 ANC Headphones under $250", query: "ANC headphones under $250 with 30h battery" },
-  { label: "🎒 Laptop Backpack 25L under $80", query: "Laptop backpack 25L under $80" },
-  { label: "⌨️ Mechanical Keyboard under $100", query: "Mechanical keyboard under $100" },
+  { label: "🎧 boAt Headphones under ₹2000", query: "boAt Rockerz headphones under 2000" },
+  { label: "⚡ 65W GaN Charger under ₹2500", query: "65W GaN charger under 2500" },
+  { label: "🎒 Laptop Backpack under ₹2000", query: "laptop backpack under 2000" },
+  { label: "⌨️ Cosmic Byte Mechanical Keyboard", query: "Cosmic Byte mechanical keyboard under 3000" },
 ];
 
 function newId(): string {
@@ -184,7 +184,7 @@ export default function Home() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g. Find 65W GaN travel charger under $40"
+          placeholder="e.g. boAt Rockerz ANC headphones under ₹2000"
           className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-brand focus:outline-none"
         />
         <input
@@ -230,6 +230,7 @@ export default function Home() {
               topPick={result.top_pick}
               alternatives={result.alternatives}
               budgetNote={budgetNote}
+              currency={result.cart?.currency ?? "INR"}
             />
           )}
         </div>

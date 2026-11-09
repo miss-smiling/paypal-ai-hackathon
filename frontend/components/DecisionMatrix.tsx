@@ -6,7 +6,14 @@ function trustTone(score: number): string {
   return "text-red-600";
 }
 
-function money(n: number, currency = "USD"): string {
+function money(n: number, currency = "INR"): string {
+  if (currency === "INR" || currency === "₹") {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(n);
+  }
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(n);
 }
 
@@ -15,9 +22,10 @@ type Props = {
   topPick: string | null;
   alternatives: { product: Product; final_score: number }[];
   budgetNote?: string;
+  currency?: string;
 };
 
-export default function DecisionMatrix({ matrix, topPick, alternatives, budgetNote }: Props) {
+export default function DecisionMatrix({ matrix, topPick, alternatives, budgetNote, currency = "INR" }: Props) {
   if (!matrix.length) return null;
   return (
     <section className="space-y-4">
@@ -66,7 +74,7 @@ export default function DecisionMatrix({ matrix, topPick, alternatives, budgetNo
                 </div>
                 <h3 className="mt-1 font-semibold leading-snug text-slate-900">{p.name}</h3>
                 <div className="mt-2 flex items-baseline justify-between">
-                  <p className="text-2xl font-bold text-slate-900">{money(p.price)}</p>
+                  <p className="text-2xl font-bold text-slate-900">{money(p.price, currency)}</p>
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                     row.trust_score >= 75 ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
                     row.trust_score >= 50 ? "bg-amber-50 text-amber-700 border border-amber-200" :
@@ -116,7 +124,7 @@ export default function DecisionMatrix({ matrix, topPick, alternatives, budgetNo
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-slate-900">{a.product.name}</p>
-                  <p className="text-xs font-bold text-emerald-700">{money(a.product.price)}</p>
+                  <p className="text-xs font-bold text-emerald-700">{money(a.product.price, currency)}</p>
                 </div>
               </div>
             ))}

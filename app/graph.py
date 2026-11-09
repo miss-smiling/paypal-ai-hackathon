@@ -17,6 +17,7 @@ from langgraph.graph import END, StateGraph
 
 from app.agents import analyze_reviews, budget_status, cheaper_alternatives, discover
 from app.cart import build_ledger, rank
+from app.config import settings
 from app.intent import parse_intent
 
 
@@ -45,10 +46,41 @@ async def parse_intent_node(state: PipelineState) -> dict:
                       f"max_price={intent['max_price'] or 'none'}"]}
 
 
-def discover_node(state: PipelineState) -> dict:
-    candidates = discover(state["intent"])
-    return {"candidates": candidates,
-            "trace": [f"Discovery agent found {len(candidates)} candidate(s)"]}
+async def discover_node(state: PipelineState) -> dict:
+    intent = state["intent"]
+    raw_query = state.get("query", "")
+    candidates: list[dict] = []
+
+    # 1. Search Google Shopping India live if SerpApi is configured
+    if settings.serpapi_api_key:
+        try:
+            from app.serp import search_indian_market
+            live_prods = await search_indian_market(
+                query=raw_query,
+                category=intent.get("category"),
+                max_price=intent.get("max_price"),
+            )
+            for p in live_prods:
+                candidates.append({
+                    "product": p,
+                    "match_score": 1.0,
+                    "matched": ["live_store_listing"],
+                    "missed": [],
+                })
+        except Exception:
+            candidates = []
+
+    # 2. Fall back to local catalog if no live candidates or SerpApi not set
+    if not candidates:
+        candidates = discover(intent)
+        source_note = "local catalog"
+    else:
+        source_note = f"Google Shopping India ({len(candidates)} live store listings)"
+
+    return {
+        "candidates": candidates,
+        "trace": [f"Discovery agent found {len(candidates)} candidate(s) via {source_note}"],
+    }
 
 
 async def review_node(state: PipelineState) -> dict:

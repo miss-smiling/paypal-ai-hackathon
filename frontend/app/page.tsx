@@ -218,6 +218,18 @@ export default function Home() {
         ))}
       </div>
 
+      {loading && (
+        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/80 p-4 text-sm text-blue-950 shadow-xs animate-pulse">
+          <div className="h-5 w-5 rounded-full border-2 border-brand border-t-transparent animate-spin shrink-0" />
+          <div className="min-w-0">
+            <p className="font-semibold text-brand-dark">Multi-Agent workflow executing...</p>
+            <p className="text-xs text-blue-800">
+              Scanning Google Shopping India, comparing merchant prices, and verifying review sentiment.
+            </p>
+          </div>
+        </div>
+      )}
+
       {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-3">

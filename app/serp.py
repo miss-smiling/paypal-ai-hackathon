@@ -13,16 +13,24 @@ from app.config import settings
 
 logger = logging.getLogger("smartcart.serp")
 
-# In-memory cache so repeated queries use 0 API credits
+# In-memory cache so repeated queries use 0 API credits and respond in 0ms
 _SEARCH_CACHE: dict[str, list[dict[str, Any]]] = {}
+
+# Reusable HTTP client with persistent connection pool to eliminate TLS handshake overhead
+_HTTP_CLIENT = httpx.AsyncClient(
+    timeout=httpx.Timeout(connect=2.5, read=5.0, write=2.5, pool=2.5),
+    limits=httpx.Limits(max_keepalive_connections=10, max_connections=20),
+)
 
 
 async def search_indian_market(query: str, category: str | None = None, max_price: float | None = None) -> list[dict[str, Any]]:
-    """Search Google Shopping India live using SerpApi google_shopping_light."""
+    """Search Google Shopping India live using SerpApi google_shopping_light with low latency."""
     if not settings.serpapi_api_key:
         return []
 
-    cache_key = f"{query.strip().lower()}:{max_price}"
+    # Normalized cache key
+    clean_q = " ".join(query.strip().lower().split())
+    cache_key = f"{clean_q}:{max_price}"
     if cache_key in _SEARCH_CACHE:
         return _SEARCH_CACHE[cache_key]
 
@@ -36,15 +44,15 @@ async def search_indian_market(query: str, category: str | None = None, max_pric
     }
 
     try:
-        async with httpx.AsyncClient(timeout=12.0) as client:
-            resp = await client.get("https://serpapi.com/search", params=params)
-            resp.raise_for_status()
-            data = resp.json()
+        resp = await _HTTP_CLIENT.get("https://serpapi.com/search", params=params)
+        resp.raise_for_status()
+        data = resp.json()
     except Exception as exc:
-        logger.warning("SerpApi request failed: %s. Falling back to local catalog.", exc)
+        logger.warning("SerpApi request failed or timed out: %s. Falling back to local catalog.", exc)
         return []
 
-    raw_items = data.get("shopping_results", [])
+    # Slice top 20 items to keep payload lightweight and fast
+    raw_items = data.get("shopping_results", [])[:20]
     products: list[dict[str, Any]] = []
 
     for item in raw_items:

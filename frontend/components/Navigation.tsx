@@ -40,14 +40,14 @@ export default function Navigation() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200/90 bg-white/90 backdrop-blur-md shadow-xs">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-[#07090e]/80 backdrop-blur-xl shadow-2xl">
       {/* Brand Header */}
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
         <Link
           href="/"
-          className="group flex items-center gap-2.5 transition-transform duration-200 hover:scale-[1.02]"
+          className="group flex items-center gap-3 transition-transform duration-200 hover:scale-[1.02]"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-dark to-brand p-1.5 shadow-sm shadow-brand/30 transition-shadow duration-200 group-hover:shadow-md">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-cyan-600 to-indigo-600 p-2 shadow-lg shadow-cyan-500/20 transition-all group-hover:shadow-cyan-500/40">
             <Image
               src="/icons/home.png"
               alt="SmartCart AI Logo"
@@ -57,11 +57,11 @@ export default function Navigation() {
             />
           </div>
           <div>
-            <span className="text-lg font-black tracking-tight text-slate-900">
-              SmartCart <span className="bg-gradient-to-r from-brand to-brand-dark bg-clip-text text-transparent">AI</span>
+            <span className="text-lg font-black tracking-tight text-white">
+              SmartCart <span className="bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">AI</span>
             </span>
             <span className="hidden text-[10px] font-medium text-slate-400 sm:inline-block sm:ml-2">
-              Next-Gen Shopping
+              Autonomous Commerce
             </span>
           </div>
         </Link>
@@ -74,12 +74,12 @@ export default function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`group flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
+                className={`group flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
                   item.isAction
-                    ? "bg-brand text-white shadow-xs shadow-brand/30 hover:bg-brand-dark hover:shadow-md"
+                    ? "bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg shadow-cyan-500/20 hover:opacity-90"
                     : active
-                    ? "bg-brand-light text-brand font-semibold ring-1 ring-brand/30 shadow-xs"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    ? "bg-cyan-500/10 text-cyan-400 font-semibold ring-1 ring-cyan-500/30 shadow-sm"
+                    : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
                 }`}
               >
                 <div className="relative h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110">
@@ -89,7 +89,7 @@ export default function Navigation() {
                     width={16}
                     height={16}
                     className={`h-full w-full object-contain ${
-                      item.isAction ? "brightness-0 invert" : ""
+                      item.isAction || active ? "brightness-0 invert filter hue-rotate-15" : "opacity-75"
                     }`}
                   />
                 </div>
@@ -103,28 +103,28 @@ export default function Navigation() {
       {/* Horizontal Bar for all primary pages */}
       <nav
         aria-label="Main Navigation"
-        className="border-t border-slate-100 bg-slate-50/70"
+        className="border-t border-slate-800/60 bg-slate-950/40"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <ul className="no-scrollbar flex items-center gap-1.5 overflow-x-auto py-2">
+          <ul className="no-scrollbar flex items-center gap-1.5 overflow-x-auto py-2.5">
             {MAIN_NAV_ITEMS.map((item) => {
               const active = isActive(item.href);
               return (
                 <li key={item.href} className="shrink-0">
                   <Link
                     href={item.href}
-                    className={`group relative flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xs ${
+                    className={`group relative flex items-center gap-2 rounded-2xl px-3.5 py-2 text-xs font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
                       active
-                        ? "bg-white text-brand shadow-xs ring-1 ring-slate-200 font-semibold"
-                        : "text-slate-600 hover:bg-white hover:text-slate-900"
+                        ? "bg-slate-900 text-cyan-400 shadow-lg ring-1 ring-cyan-500/30 font-semibold"
+                        : "text-slate-400 hover:bg-slate-900/60 hover:text-slate-200"
                     }`}
                   >
                     {/* Icon container */}
                     <div
-                      className={`flex h-6 w-6 items-center justify-center rounded-lg p-0.5 transition-all duration-200 group-hover:scale-110 ${
+                      className={`flex h-6 w-6 items-center justify-center rounded-xl p-1 transition-all duration-200 group-hover:scale-110 ${
                         active
-                          ? "bg-brand/10 ring-1 ring-brand/20"
-                          : "bg-slate-100/80 group-hover:bg-slate-100"
+                          ? "bg-cyan-500/20 ring-1 ring-cyan-500/40"
+                          : "bg-slate-900/80 group-hover:bg-slate-800"
                       }`}
                     >
                       <Image
@@ -132,7 +132,7 @@ export default function Navigation() {
                         alt={`${item.label} icon`}
                         width={20}
                         height={20}
-                        className="h-full w-full object-contain drop-shadow-2xs"
+                        className="h-full w-full object-contain opacity-80 group-hover:opacity-100"
                       />
                     </div>
 
@@ -141,14 +141,14 @@ export default function Navigation() {
 
                     {/* Badge if present */}
                     {item.badge && (
-                      <span className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-1.5 py-0.2 text-[9px] font-bold text-white shadow-2xs">
+                      <span className="rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 px-1.5 py-0.2 text-[9px] font-bold text-white shadow-sm">
                         {item.badge}
                       </span>
                     )}
 
                     {/* Active highlight indicator bar */}
                     {active && (
-                      <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-brand" />
+                      <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50" />
                     )}
                   </Link>
                 </li>

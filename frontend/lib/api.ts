@@ -30,7 +30,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  search: (sessionId: string, query: string, couponCode: string | null) =>
+  search: (sessionId: string, query: string, couponCode: string | null = null) =>
     request<SearchResult>("/api/search", {
       method: "POST",
       body: JSON.stringify({ session_id: sessionId, query, coupon_code: couponCode }),

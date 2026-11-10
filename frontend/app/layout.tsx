@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Navigation from "@/components/Navigation";
 
 export const metadata: Metadata = {
   title: "SmartCart AI — Autonomous Shopping Engine",
@@ -9,11 +10,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#07090e] font-sans text-slate-100 antialiased">
+      <body className="min-h-screen bg-[#07090e] font-sans text-slate-100 antialiased flex flex-col">
         <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
         <div className="fixed top-0 left-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-cyan-500/5 blur-[120px]" />
         <div className="fixed top-1/3 right-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-indigo-500/5 blur-[120px]" />
-        {children}
+        
+        <Navigation />
+        <main className="flex-1 w-full">{children}</main>
       </body>
     </html>
   );

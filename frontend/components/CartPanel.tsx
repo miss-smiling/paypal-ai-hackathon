@@ -16,7 +16,6 @@ function money(n: number, currency = "INR"): string {
   }).format(n);
 }
 
-
 type Props = {
   ledger: Ledger;
   approved: boolean;
@@ -40,49 +39,84 @@ export default function CartPanel({
   onCapture,
   riskReasons,
 }: Props) {
-  const shipping = ledger.shipping === 0 ? "Free" : money(ledger.shipping, ledger.currency);
-  return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">SmartCart</h2>
+  const shipping =
+    ledger.shipping === 0
+      ? "Free"
+      : money(ledger.shipping, ledger.currency);
 
-      <div className="mt-3 space-y-1 text-sm">
+  const darkText = { color: "#1e293b" };
+
+  return (
+    <section
+      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+      style={{ colorScheme: "light", color: "#1e293b" }}
+    >
+      <h2
+        className="text-lg font-semibold"
+        style={{ color: "#111827" }}
+      >
+        SmartCart
+      </h2>
+
+      <div
+        className="mt-3 space-y-1 text-sm"
+        style={darkText}
+      >
         {ledger.items.map((item) => (
-          <div key={item.id} className="flex justify-between">
-            <span>{item.name}</span>
-            <span>{money(item.price, ledger.currency)}</span>
+          <div
+            key={item.id}
+            className="flex justify-between gap-3"
+          >
+            <span style={{ color: "#374151" }}>{item.name}</span>
+            <span
+              className="shrink-0"
+              style={{ color: "#374151" }}
+            >
+              {money(item.price, ledger.currency)}
+            </span>
           </div>
         ))}
-        <div className="flex justify-between text-slate-600">
+
+        <div className="flex justify-between" style={{ color: "#64748b" }}>
           <span>Subtotal</span>
           <span>{money(ledger.subtotal, ledger.currency)}</span>
         </div>
+
         {ledger.coupon ? (
-          <div className="flex justify-between text-emerald-700">
+          <div className="flex justify-between" style={{ color: "#047857" }}>
             <span>
               Coupon {ledger.coupon.code} ({ledger.coupon.description})
             </span>
             <span>-{money(ledger.discount, ledger.currency)}</span>
           </div>
         ) : (
-          <div className="flex justify-between text-slate-500">
+          <div className="flex justify-between" style={{ color: "#64748b" }}>
             <span>No coupon applied</span>
             <span>$0.00</span>
           </div>
         )}
-        <div className="flex justify-between text-slate-600">
+
+        <div className="flex justify-between" style={{ color: "#64748b" }}>
           <span>Shipping</span>
           <span>{shipping}</span>
         </div>
-        <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold">
+
+        <div
+          className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold"
+          style={{ color: "#111827" }}
+        >
           <span>Total</span>
           <span>{money(ledger.total, ledger.currency)}</span>
         </div>
       </div>
 
-      <label className="mt-4 flex items-start gap-2 text-sm text-slate-700">
+      <label
+        className="mt-4 flex items-start gap-2 text-sm"
+        style={{ color: "#475569" }}
+      >
         <input
           type="checkbox"
-          className="mt-1"
+          className="mt-1 accent-blue-600"
           checked={approved}
           onChange={(e) => onApprovedChange(e.target.checked)}
         />
@@ -99,25 +133,37 @@ export default function CartPanel({
         >
           {paying ? "Processing..." : "Pay with PayPal"}
         </button>
+
         {canCapture && (
           <button
             onClick={onCapture}
             disabled={paying}
             className="rounded-lg border border-brand px-4 py-2 font-medium text-brand"
           >
-            I&apos;ve approved the payment
+            I've approved the payment
           </button>
         )}
       </div>
 
       {riskReasons.length > 0 && (
-        <ul className="mt-3 list-inside list-disc text-sm text-red-600">
+        <ul
+          className="mt-3 list-inside list-disc text-sm"
+          style={{ color: "#dc2626" }}
+        >
           {riskReasons.map((r) => (
             <li key={r}>{r}</li>
           ))}
         </ul>
       )}
-      {payStatus && <p className="mt-3 text-sm text-slate-600">{payStatus}</p>}
+
+      {payStatus && (
+        <p
+          className="mt-3 text-sm"
+          style={{ color: "#475569" }}
+        >
+          {payStatus}
+        </p>
+      )}
     </section>
   );
 }

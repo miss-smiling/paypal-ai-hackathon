@@ -16,6 +16,7 @@ function money(n: number, currency = "INR"): string {
   }).format(n);
 }
 
+
 type Props = {
   ledger: Ledger;
   approved: boolean;
@@ -39,28 +40,22 @@ export default function CartPanel({
   onCapture,
   riskReasons,
 }: Props) {
-  const shipping =
-    ledger.shipping === 0 ? "Free" : money(ledger.shipping, ledger.currency);
-
+  const shipping = ledger.shipping === 0 ? "Free" : money(ledger.shipping, ledger.currency);
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 text-slate-900 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-900">SmartCart</h2>
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="text-lg font-semibold">SmartCart</h2>
 
-      <div className="mt-3 space-y-1 text-sm text-slate-800">
+      <div className="mt-3 space-y-1 text-sm">
         {ledger.items.map((item) => (
-          <div key={item.id} className="flex justify-between gap-3">
+          <div key={item.id} className="flex justify-between">
             <span>{item.name}</span>
-            <span className="shrink-0">
-              {money(item.price, ledger.currency)}
-            </span>
+            <span>{money(item.price, ledger.currency)}</span>
           </div>
         ))}
-
         <div className="flex justify-between text-slate-600">
           <span>Subtotal</span>
           <span>{money(ledger.subtotal, ledger.currency)}</span>
         </div>
-
         {ledger.coupon ? (
           <div className="flex justify-between text-emerald-700">
             <span>
@@ -74,13 +69,11 @@ export default function CartPanel({
             <span>$0.00</span>
           </div>
         )}
-
         <div className="flex justify-between text-slate-600">
           <span>Shipping</span>
           <span>{shipping}</span>
         </div>
-
-        <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold text-slate-900">
+        <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold">
           <span>Total</span>
           <span>{money(ledger.total, ledger.currency)}</span>
         </div>
@@ -89,7 +82,7 @@ export default function CartPanel({
       <label className="mt-4 flex items-start gap-2 text-sm text-slate-700">
         <input
           type="checkbox"
-          className="mt-1 accent-blue-600"
+          className="mt-1"
           checked={approved}
           onChange={(e) => onApprovedChange(e.target.checked)}
         />
@@ -106,14 +99,13 @@ export default function CartPanel({
         >
           {paying ? "Processing..." : "Pay with PayPal"}
         </button>
-
         {canCapture && (
           <button
             onClick={onCapture}
             disabled={paying}
             className="rounded-lg border border-brand px-4 py-2 font-medium text-brand"
           >
-            I've approved the payment
+            I&apos;ve approved the payment
           </button>
         )}
       </div>
@@ -125,10 +117,7 @@ export default function CartPanel({
           ))}
         </ul>
       )}
-
-      {payStatus && (
-        <p className="mt-3 text-sm text-slate-600">{payStatus}</p>
-      )}
+      {payStatus && <p className="mt-3 text-sm text-slate-600">{payStatus}</p>}
     </section>
   );
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { DollarSign, ShieldCheck, ShoppingBag, ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
 import { useNovatek } from "@/context/NovatekContext";
-import { NOVATEK_PRODUCTS } from "@/lib/novatekData";
+import { SMARTCART_PRODUCTS } from "@/lib/smartcartData";
 
 export default function BudgetPlannerPage() {
   const { subtotal, addToCart } = useNovatek();
@@ -15,22 +15,21 @@ export default function BudgetPlannerPage() {
 
   const recommendedPackages = [
     {
-      title: "The Creator Bundle",
-      budget: "$1,498",
+      title: "The Pro Ecosystem Bundle",
+      budget: "$1,448.00",
       items: [
-        NOVATEK_PRODUCTS.find((p) => p.id === "novabook-air-m2") || NOVATEK_PRODUCTS[2],
-        NOVATEK_PRODUCTS.find((p) => p.id === "novabuds-pro") || NOVATEK_PRODUCTS[1],
+        SMARTCART_PRODUCTS[0], // iPhone 16 Pro ($1199)
+        SMARTCART_PRODUCTS[SMARTCART_PRODUCTS.length - 1], // AirPods Pro 2 ($249)
       ],
-      description: "NovaBook Air M2 + NovaBuds Pro with 18h battery and active noise cancellation.",
+      description: "iPhone 16 Pro Titanium + AirPods Pro 2 with Adaptive Audio and MagSafe USB-C.",
     },
     {
-      title: "The Mobile Pro Bundle",
-      budget: "$1,248",
+      title: "The Galaxy AI Power Bundle",
+      budget: "$999.00",
       items: [
-        NOVATEK_PRODUCTS.find((p) => p.id === "novaphone-15-pro") || NOVATEK_PRODUCTS[0],
-        NOVATEK_PRODUCTS.find((p) => p.id === "novawatch-x") || NOVATEK_PRODUCTS[3],
+        SMARTCART_PRODUCTS[1], // Galaxy S24 ($999)
       ],
-      description: "NovaPhone 15 Pro Titanium + NovaWatch X Titanium with 50m water resistance.",
+      description: "Samsung Galaxy S24 with Snapdragon 8 Gen 3 and 2600-nit Dynamic AMOLED screen.",
     },
   ];
 
@@ -39,10 +38,10 @@ export default function BudgetPlannerPage() {
       <div className="mx-auto max-w-5xl space-y-8">
         
         {/* Header */}
-        <div className="rounded-3xl border border-slate-800 bg-[#0d1222] p-8 shadow-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-400 mb-3">
+        <div className="rounded-3xl border border-slate-800 bg-[#0d1226] p-8 shadow-2xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-1 text-xs font-semibold text-cyan-400 mb-3">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Autonomous Budget Guard</span>
+            <span>SmartCart Budget Guard</span>
           </div>
           <h1 className="text-3xl font-black text-white">Smart Budget Planner</h1>
           <p className="mt-1 text-sm text-slate-400">
@@ -54,7 +53,7 @@ export default function BudgetPlannerPage() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
           
           {/* Target Input */}
-          <div className="md:col-span-5 rounded-2xl border border-slate-800 bg-[#0a0e1c] p-6 space-y-4">
+          <div className="md:col-span-5 rounded-2xl border border-slate-800 bg-[#0a0e1e] p-6 space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">Set Target Budget</h2>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-500">$</span>
@@ -62,11 +61,11 @@ export default function BudgetPlannerPage() {
                 type="number"
                 value={targetBudget}
                 onChange={(e) => setTargetBudget(Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-slate-700 bg-[#06080e] py-3.5 pl-9 pr-4 text-xl font-black text-white focus:border-cyan-400 focus:outline-none"
+                className="w-full rounded-xl border border-slate-700 bg-[#060810] py-3.5 pl-9 pr-4 text-xl font-black text-white focus:border-cyan-400 focus:outline-none"
               />
             </div>
             <div className="flex gap-2">
-              {[500, 1000, 1500, 2500].map((val) => (
+              {[800, 1200, 1500, 2500].map((val) => (
                 <button
                   key={val}
                   onClick={() => setTargetBudget(val)}
@@ -83,10 +82,10 @@ export default function BudgetPlannerPage() {
           </div>
 
           {/* Progress Guard */}
-          <div className="md:col-span-7 rounded-2xl border border-slate-800 bg-[#0a0e1c] p-6 flex flex-col justify-between">
+          <div className="md:col-span-7 rounded-2xl border border-slate-800 bg-[#0a0e1e] p-6 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between text-xs mb-2">
-                <span className="text-slate-400">Current Bag Total: ${subtotal}</span>
+                <span className="text-slate-400">Current Bag Total: ${subtotal}.00</span>
                 <span className="font-bold text-cyan-300">{spentPct}% Used</span>
               </div>
               <div className="h-3 w-full overflow-hidden rounded-full bg-slate-800">
@@ -97,9 +96,9 @@ export default function BudgetPlannerPage() {
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-[#06080e] p-3 text-xs border border-slate-800/80">
+            <div className="mt-4 flex items-center justify-between rounded-xl bg-[#060810] p-3 text-xs border border-slate-800/80">
               <span className="text-slate-400">Remaining Safe Spend:</span>
-              <span className="font-mono text-base font-bold text-cyan-300">${remaining}</span>
+              <span className="font-mono text-base font-bold text-cyan-300">${remaining}.00</span>
             </div>
           </div>
 
@@ -107,10 +106,10 @@ export default function BudgetPlannerPage() {
 
         {/* Recommended Bundles */}
         <div>
-          <h2 className="text-lg font-bold text-white mb-4">Curated Value Bundles</h2>
+          <h2 className="text-lg font-bold text-white mb-4">Curated Smartphone Bundles</h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {recommendedPackages.map((pkg) => (
-              <div key={pkg.title} className="rounded-2xl border border-slate-800 bg-[#0d1222] p-6 space-y-4">
+              <div key={pkg.title} className="rounded-2xl border border-slate-800 bg-[#0d1226] p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white">{pkg.title}</h3>
                   <span className="text-lg font-black text-cyan-300">{pkg.budget}</span>
@@ -118,11 +117,11 @@ export default function BudgetPlannerPage() {
                 <p className="text-xs text-slate-300">{pkg.description}</p>
                 <div className="flex gap-3">
                   {pkg.items.map((item) => (
-                    <div key={item.id} className="flex items-center gap-2 rounded-xl bg-[#07090e] p-2 border border-slate-800 flex-1">
+                    <div key={item.id} className="flex items-center gap-2 rounded-xl bg-[#060810] p-2 border border-slate-800 flex-1">
                       <img src={item.image} alt={item.name} className="h-8 w-8 object-contain" />
                       <div className="text-[10px]">
                         <p className="font-bold text-white truncate">{item.name}</p>
-                        <p className="text-slate-400">${item.price}</p>
+                        <p className="text-slate-400">${item.price}.00</p>
                       </div>
                     </div>
                   ))}

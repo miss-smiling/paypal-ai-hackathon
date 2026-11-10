@@ -32,12 +32,12 @@ export default function NovatekCareModal() {
             <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">
               OFFICIAL COVERAGE
             </span>
-            <h2 className="text-xl font-black text-white">NOVATEK CARE+ Plans</h2>
+            <h2 className="text-xl font-black text-white">SmartCart Care+ Protection</h2>
           </div>
         </div>
 
         <p className="mt-3 text-xs text-slate-300">
-          Every Novatek device comes with 1-year limited warranty. Upgrade to Care+ for complete peace of mind, accidental damage drops, and zero-deductible priority replacement.
+          Every device on SmartCart comes with 1-year limited manufacturer warranty. Upgrade to Care+ for complete peace of mind, accidental damage drops, and zero-deductible priority replacement.
         </p>
 
         {/* Plan Cards */}

@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   Sparkles,
   Send,
-  Bot,
   User,
   ShoppingBag,
   SlidersHorizontal,
@@ -18,7 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useNovatek } from "@/context/NovatekContext";
-import { NOVATEK_PRODUCTS, NovatekProduct } from "@/lib/novatekData";
+import { SMARTCART_PRODUCTS, SmartCartProduct } from "@/lib/smartcartData";
 
 interface AgentStep {
   agent: string;
@@ -37,14 +36,14 @@ interface AssistantExchange {
   };
   steps: AgentStep[];
   decisionMatrix: {
-    product: NovatekProduct;
+    product: SmartCartProduct;
     matchScore: number;
     trustScore: number;
     valueScore: number;
     verdict: string;
   }[];
-  topPick: NovatekProduct;
-  alternatives: NovatekProduct[];
+  topPick: SmartCartProduct;
+  alternatives: SmartCartProduct[];
   aiReasoning: string;
 }
 
@@ -54,51 +53,51 @@ export default function AssistantPage() {
   const [budgetLimit, setBudgetLimit] = useState<number>(1500);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Sample prompt chips
+  // Sample prompt chips matching smartphone catalog
   const samplePrompts = [
-    { label: "🎧 ANC Headphones under $350 with 40h battery", query: "ANC headphones under 350 with long battery" },
-    { label: "💻 High performance laptop for developers", query: "Fast developer laptop under 1400 with great battery" },
-    { label: "⌚ Titanium sports smartwatch with ECG", query: "Titanium smartwatch with health sensors and GPS" },
-    { label: "⚡ Universal multi-port GaN travel charger", query: "GaN charger for laptop and phone under 100" },
+    { label: "📱 iPhone 16 Pro with titanium design", query: "iPhone 16 Pro with pro camera and titanium design" },
+    { label: "⚡ Samsung Galaxy S24 with Galaxy AI", query: "Samsung Galaxy S24 with AI features under 1100" },
+    { label: "📸 Best camera phone under $850", query: "Best camera phone for photography under 850" },
+    { label: "🔋 OnePlus 12 with super fast charging", query: "OnePlus 12 with fast charging and big battery" },
   ];
 
   // Default initial recommendation state
   const [history, setHistory] = useState<AssistantExchange[]>([
     {
       id: "initial-1",
-      query: "ANC headphones with over 30h battery life for travel",
+      query: "Top rated titanium flagship smartphone with pro camera",
       timestamp: "Just now",
       intent: {
-        category: "Audio",
-        budgetLimit: 400,
-        desiredFeatures: ["Active Noise Cancellation", "Battery > 30h", "Travel Comfort"],
+        category: "Smartphones",
+        budgetLimit: 1400,
+        desiredFeatures: ["Aerospace Titanium", "Pro Camera 5x Zoom", "A18 Pro Silicon"],
       },
       steps: [
-        { agent: "Intent Parser", status: "done", detail: "Parsed category: Audio, Feature: ANC, Battery: >30h" },
-        { agent: "Spec Discovery", status: "done", detail: "Scanned 8 acoustic hardware devices, 2 matched criteria" },
-        { agent: "Review Trust Guard", status: "done", detail: "Scored 99% verified review integrity, removed 14 promo bots" },
-        { agent: "Budget Optimizer", status: "done", detail: "Within $400 budget, calculated best bundle value" },
+        { agent: "Intent Parser", status: "done", detail: "Parsed category: Smartphones, Feature: Titanium Pro Camera" },
+        { agent: "Spec Discovery", status: "done", detail: "Scanned verified catalog, matched iPhone 16 Pro & Galaxy S24" },
+        { agent: "Review Trust Guard", status: "done", detail: "Scored 99% verified review integrity across 2,540 real buyers" },
+        { agent: "Budget Optimizer", status: "done", detail: "Within $1,400 budget limit, optimal value calculated" },
       ],
       decisionMatrix: [
         {
-          product: NOVATEK_PRODUCTS.find((p) => p.id === "novasound-max") || NOVATEK_PRODUCTS[4],
-          matchScore: 98,
+          product: SMARTCART_PRODUCTS[0], // iPhone 16 Pro
+          matchScore: 99,
           trustScore: 99,
-          valueScore: 95,
-          verdict: "Top Recommended: 50h playback, 45dB hybrid ANC, beryllium acoustic drivers.",
+          valueScore: 97,
+          verdict: "Top Recommended: A18 Pro 3nm chip, Camera Control sensor, 48MP pro camera system.",
         },
         {
-          product: NOVATEK_PRODUCTS.find((p) => p.id === "novabuds-pro") || NOVATEK_PRODUCTS[1],
-          matchScore: 92,
-          trustScore: 96,
-          valueScore: 94,
-          verdict: "Budget Alternative: Pocket form factor, 32h case battery, $199 price point.",
+          product: SMARTCART_PRODUCTS[1], // Samsung Galaxy S24
+          matchScore: 93,
+          trustScore: 97,
+          valueScore: 95,
+          verdict: "Alternative: Galaxy AI on-device translation, 2600-nit Dynamic AMOLED screen, $999 price point.",
         },
       ],
-      topPick: NOVATEK_PRODUCTS.find((p) => p.id === "novasound-max") || NOVATEK_PRODUCTS[4],
-      alternatives: [NOVATEK_PRODUCTS.find((p) => p.id === "novabuds-pro") || NOVATEK_PRODUCTS[1]],
+      topPick: SMARTCART_PRODUCTS[0],
+      alternatives: [SMARTCART_PRODUCTS[1]],
       aiReasoning:
-        "Based on your travel requirement and battery threshold, **NovaSound Max** is the superior match. Its 50-hour playback exceeds your 30h requirement by 66%, and 45dB hybrid noise cancellation shuts out airplane cabin frequencies. If you prioritize pocket compactness, **NovaBuds Pro** saves $150 while delivering high-grade adaptive noise reduction.",
+        "For a titanium flagship with industry-leading photography and performance, **iPhone 16 Pro** ($1,199.00) is the undisputed top pick. Its A18 Pro silicon delivers unprecedented battery efficiency, while the 48MP pro camera with 5x optical telephoto lens captures stunning detail. If you prefer Android with generative AI capabilities, **Samsung Galaxy S24** provides outstanding value at $999.00.",
     },
   ]);
 
@@ -111,41 +110,41 @@ export default function AssistantPage() {
 
     setTimeout(() => {
       const qLower = q.toLowerCase();
-      let topPick = NOVATEK_PRODUCTS[0];
-      let alternatives: NovatekProduct[] = [];
-      let category = "All Hardware";
+      let topPick = SMARTCART_PRODUCTS[0];
+      let alternatives: SmartCartProduct[] = [];
+      let category = "Smartphones";
       let reasoning = "";
 
-      if (qLower.includes("laptop") || qLower.includes("code") || qLower.includes("program") || qLower.includes("macbook") || qLower.includes("developer")) {
-        category = "Laptops";
-        topPick = NOVATEK_PRODUCTS.find((p) => p.id === "novabook-air-m2") || NOVATEK_PRODUCTS[2];
-        alternatives = [NOVATEK_PRODUCTS.find((p) => p.id === "novapad-ultra-12") || NOVATEK_PRODUCTS[7]];
+      if (qLower.includes("samsung") || qLower.includes("galaxy") || qLower.includes("s24") || qLower.includes("s23")) {
+        category = "Smartphones";
+        topPick = SMARTCART_PRODUCTS[1]; // S24
+        alternatives = [SMARTCART_PRODUCTS[5]]; // S23
         reasoning =
-          "The **NovaBook Air M2** is engineered with an 8-core CPU, 10-core GPU, and 18-hour battery life inside a fanless silent aluminum unibody. It easily compiles code, drives external displays, and stays cool with zero throttling. As a secondary portable option, **NovaPad Ultra 12** offers a 120Hz OLED screen and stylus input for sketching.";
-      } else if (qLower.includes("watch") || qLower.includes("fitness") || qLower.includes("health") || qLower.includes("gps") || qLower.includes("heart")) {
-        category = "Wearables";
-        topPick = NOVATEK_PRODUCTS.find((p) => p.id === "novawatch-x") || NOVATEK_PRODUCTS[3];
-        alternatives = [NOVATEK_PRODUCTS.find((p) => p.id === "novabuds-pro") || NOVATEK_PRODUCTS[1]];
+          "**Samsung Galaxy S24** ($999.00) features on-device Galaxy AI, Snapdragon 8 Gen 3 for Galaxy, and an Armor Aluminum enclosure with a 120Hz Dynamic AMOLED display. If you want to save money, **Galaxy S23** is on sale at $719.00 (20% off).";
+      } else if (qLower.includes("pixel") || qLower.includes("google") || qLower.includes("camera") || qLower.includes("photo")) {
+        category = "Smartphones";
+        topPick = SMARTCART_PRODUCTS[2]; // Pixel 9
+        alternatives = [SMARTCART_PRODUCTS[6]]; // Pixel 8
         reasoning =
-          "The **NovaWatch X** is our flagship wearable, featuring aerospace titanium, sapphire crystal glass, 50m swimproof water resistance, ECG diagnostic sensors, and a 7-day battery life. We recommend pairing it with **NovaBuds Pro** for phone-free workout tracking.";
-      } else if (qLower.includes("charger") || qLower.includes("gan") || qLower.includes("power") || qLower.includes("brick") || qLower.includes("plug")) {
-        category = "Accessories";
-        topPick = NOVATEK_PRODUCTS.find((p) => p.id === "novapower-gan-120w") || NOVATEK_PRODUCTS[5];
+          "For photography enthusiasts, **Google Pixel 9** ($799.00) delivers the Tensor G4 processor and Gemini Nano AI with advanced computational photo tools like Add Me and Magic Editor.";
+      } else if (qLower.includes("oneplus") || qLower.includes("fast") || qLower.includes("charge")) {
+        category = "Smartphones";
+        topPick = SMARTCART_PRODUCTS[3]; // OnePlus 12
+        alternatives = [SMARTCART_PRODUCTS[7]]; // Nord 3
+        reasoning =
+          "**OnePlus 12** ($899.00) is the charging speed leader, featuring 80W SUPERVOOC charging, a massive 5400mAh battery, and 4th Gen Hasselblad camera calibration.";
+      } else if (qLower.includes("audio") || qLower.includes("earbud") || qLower.includes("airpod")) {
+        category = "Audio";
+        topPick = SMARTCART_PRODUCTS[8] || SMARTCART_PRODUCTS[0]; // AirPods Pro 2
         alternatives = [];
         reasoning =
-          "**NovaPower GaN 120W Hub** is the optimal power accessory. Its gallium nitride architecture enables 120W total output across 3 USB-C ports and 1 USB-A port, capable of fast-charging a laptop and phone simultaneously while fitting in your jacket pocket.";
-      } else if (qLower.includes("phone") || qLower.includes("titanium") || qLower.includes("camera") || qLower.includes("mobile")) {
-        category = "Smartphones";
-        topPick = NOVATEK_PRODUCTS.find((p) => p.id === "novaphone-15-pro") || NOVATEK_PRODUCTS[0];
-        alternatives = [NOVATEK_PRODUCTS.find((p) => p.id === "novawatch-x") || NOVATEK_PRODUCTS[3]];
-        reasoning =
-          "**NovaPhone 15 Pro** delivers Grade 5 Aerospace Titanium, A17 Pro 3nm processing, 48MP pro camera system with 5x optical telephoto zoom, and up to 29 hours of battery. Verified trust rating is 98% across 2,450 authentic buyers.";
+          "**AirPods Pro 2** ($249.00) delivers up to 2x more Active Noise Cancellation, Adaptive Audio, and up to 30 hours of listening with the MagSafe USB-C case.";
       } else {
-        category = "Audio & Accessories";
-        topPick = NOVATEK_PRODUCTS.find((p) => p.id === "novasound-max") || NOVATEK_PRODUCTS[4];
-        alternatives = [NOVATEK_PRODUCTS.find((p) => p.id === "novabuds-pro") || NOVATEK_PRODUCTS[1]];
+        category = "Smartphones";
+        topPick = SMARTCART_PRODUCTS[0];
+        alternatives = [SMARTCART_PRODUCTS[1]];
         reasoning =
-          `I ran an agentic discovery search across all product specifications matching "${q}". **${topPick.name}** ranked highest on spec-to-price ratio and verified review sentiment.`;
+          `I analyzed our verified smartphone catalog for "${q}". **${topPick.name}** ranked highest based on silicon benchmarks, camera scores, and authentic buyer trust ratings.`;
       }
 
       const newExchange: AssistantExchange = {
@@ -171,13 +170,13 @@ export default function AssistantPage() {
             valueScore: 96,
             verdict: topPick.tagline,
           },
-          ...(alternatives.map((alt) => ({
+          ...alternatives.map((alt) => ({
             product: alt,
-            matchScore: 89,
+            matchScore: 90,
             trustScore: alt.trustScore,
-            valueScore: 91,
+            valueScore: 93,
             verdict: alt.tagline,
-          }))),
+          })),
         ],
         topPick,
         alternatives,
@@ -186,7 +185,7 @@ export default function AssistantPage() {
 
       setHistory((prev) => [newExchange, ...prev]);
       setIsProcessing(false);
-    }, 1100);
+    }, 950);
   };
 
   const remainingBudget = Math.max(0, budgetLimit - subtotal);
@@ -196,23 +195,34 @@ export default function AssistantPage() {
     <div className="min-h-screen bg-[#07090f] text-slate-100 py-10 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         
-        {/* Header Section */}
-        <div className="flex flex-col gap-4 border-b border-slate-800/80 pb-8 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-1 text-xs font-semibold tracking-wider text-cyan-400 uppercase">
-              <Sparkles className="h-3.5 w-3.5 animate-pulse text-cyan-300" />
-              <span>Multi-Agent Tech Concierge</span>
+        {/* Header Section with Plain Silhouette Avatar */}
+        <div className="flex flex-col gap-6 border-b border-slate-800/80 pb-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            {/* Plain Silhouette Avatar provided by user */}
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-cyan-400 bg-black shadow-lg shadow-cyan-500/20">
+              <img
+                src="/avatar.png"
+                alt="SmartCart AI Avatar"
+                className="h-full w-full object-cover"
+              />
             </div>
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">
-              NovaAI Shopping Assistant
-            </h1>
-            <p className="mt-1 text-sm text-slate-400 max-w-2xl">
-              Describe what you need in natural language. Our autonomous agents verify technical specifications, clean review sentiment, guard your budget, and rank recommendations without sponsored bias.
-            </p>
+
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-1 text-xs font-semibold tracking-wider text-cyan-400 uppercase">
+                <Sparkles className="h-3.5 w-3.5 animate-pulse text-cyan-300" />
+                <span>SmartCart AI Concierge</span>
+              </div>
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
+                SmartCart Shopping Assistant
+              </h1>
+              <p className="mt-1 text-sm text-slate-400 max-w-2xl">
+                Describe what you need in plain English. Our autonomous agents verify technical specifications, clean review sentiment, guard your budget, and rank recommendations without sponsored bias.
+              </p>
+            </div>
           </div>
 
           {/* Budget Guard Pill */}
-          <div className="rounded-2xl border border-slate-800 bg-[#0d1222] p-4 sm:min-w-[260px] shadow-lg">
+          <div className="rounded-2xl border border-slate-800 bg-[#0d1224] p-4 sm:min-w-[260px] shadow-lg">
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-400">Shopping Budget</span>
               <span className="font-bold text-white">${budgetLimit}</span>
@@ -233,7 +243,7 @@ export default function AssistantPage() {
         </div>
 
         {/* Search & Prompt Box */}
-        <div className="mt-8 rounded-3xl border border-cyan-500/30 bg-[#0d1222]/90 p-6 shadow-2xl backdrop-blur-xl">
+        <div className="mt-8 rounded-3xl border border-cyan-500/30 bg-[#0d1224]/90 p-6 shadow-2xl backdrop-blur-xl">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -246,7 +256,7 @@ export default function AssistantPage() {
                 type="text"
                 value={inputQuery}
                 onChange={(e) => setInputQuery(e.target.value)}
-                placeholder="Ask e.g. 'ANC headphones under $300 with 30h battery' or 'Best coding laptop with 16GB RAM'..."
+                placeholder="Ask e.g. 'iPhone 16 Pro with pro camera' or 'Samsung Galaxy S24 under 1000'..."
                 className="w-full rounded-2xl border border-slate-700/80 bg-[#07090e] px-5 py-4 text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
               />
             </div>
@@ -277,7 +287,7 @@ export default function AssistantPage() {
               <button
                 key={sample.label}
                 onClick={() => handleRunAgent(sample.query)}
-                className="rounded-full border border-slate-800 bg-[#090c16] px-3 py-1.5 text-xs text-slate-300 hover:border-cyan-500/50 hover:text-white transition-colors"
+                className="rounded-full border border-slate-800 bg-[#090d1c] px-3 py-1.5 text-xs text-slate-300 hover:border-cyan-500/50 hover:text-white transition-colors"
               >
                 {sample.label}
               </button>
@@ -289,9 +299,11 @@ export default function AssistantPage() {
         {isProcessing && (
           <div className="mt-8 rounded-2xl border border-cyan-500/40 bg-cyan-950/20 p-6 text-center animate-pulse">
             <div className="inline-flex items-center gap-3 text-cyan-300">
-              <Bot className="h-5 w-5 animate-spin" />
+              <div className="flex h-6 w-6 items-center justify-center rounded-full overflow-hidden border border-cyan-400 bg-black">
+                <img src="/avatar.png" alt="Avatar" className="h-full w-full object-cover" />
+              </div>
               <span className="text-sm font-bold">
-                LangGraph Agents running: Intent extraction → Spec discovery → Trust scoring → Budget check...
+                SmartCart Multi-Agent Engine: Parsing intent → Retrieving specs → Scoring verified trust...
               </span>
             </div>
           </div>
@@ -302,7 +314,7 @@ export default function AssistantPage() {
           {history.map((exchange) => (
             <div
               key={exchange.id}
-              className="rounded-3xl border border-slate-800 bg-[#0b0e1b] p-6 sm:p-8 shadow-2xl space-y-8"
+              className="rounded-3xl border border-slate-800 bg-[#0b1020] p-6 sm:p-8 shadow-2xl space-y-8"
             >
               {/* Query & Intent Header */}
               <div className="flex flex-col gap-2 border-b border-slate-800/80 pb-6 sm:flex-row sm:items-center sm:justify-between">
@@ -335,7 +347,7 @@ export default function AssistantPage() {
                   {exchange.steps.map((step, idx) => (
                     <div
                       key={idx}
-                      className="rounded-xl border border-slate-800/80 bg-[#080b14] p-3 text-xs"
+                      className="rounded-xl border border-slate-800/80 bg-[#080b16] p-3 text-xs"
                     >
                       <div className="flex items-center justify-between text-cyan-400 font-bold mb-1">
                         <span>{step.agent}</span>
@@ -347,11 +359,13 @@ export default function AssistantPage() {
                 </div>
               </div>
 
-              {/* AI Reasoning Summary */}
+              {/* AI Reasoning Summary with Avatar */}
               <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-blue-950/40 via-cyan-950/20 to-slate-900/40 p-5">
-                <div className="flex items-center gap-2 text-xs font-bold text-cyan-300 uppercase tracking-wider">
-                  <Bot className="h-4 w-4 text-cyan-400" />
-                  <span>Autonomous Recommendation Reasoning</span>
+                <div className="flex items-center gap-2.5 text-xs font-bold text-cyan-300 uppercase tracking-wider">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full overflow-hidden border border-cyan-400 bg-black">
+                    <img src="/avatar.png" alt="Avatar" className="h-full w-full object-cover" />
+                  </div>
+                  <span>SmartCart Concierge Verdict</span>
                 </div>
                 <p className="mt-2 text-sm text-slate-200 leading-relaxed">
                   {exchange.aiReasoning}
@@ -370,7 +384,7 @@ export default function AssistantPage() {
                   </span>
                 </div>
 
-                <div className="rounded-2xl border border-cyan-400/50 bg-[#0e1426] p-6 shadow-xl shadow-cyan-500/10 transition-all">
+                <div className="rounded-2xl border border-cyan-400/50 bg-[#0e162c] p-6 shadow-xl shadow-cyan-500/10 transition-all">
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-12 items-center">
                     
                     {/* Thumbnail */}
@@ -435,11 +449,11 @@ export default function AssistantPage() {
                     <div className="md:col-span-3 flex flex-col justify-center items-end border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6 space-y-3">
                       <div className="text-right">
                         <div className="text-2xl font-black text-white">
-                          ${exchange.topPick.price}
+                          ${exchange.topPick.price}.00
                         </div>
                         {exchange.topPick.originalPrice && (
                           <span className="text-xs text-slate-500 line-through">
-                            ${exchange.topPick.originalPrice}
+                            ${exchange.topPick.originalPrice}.00
                           </span>
                         )}
                       </div>
@@ -449,7 +463,7 @@ export default function AssistantPage() {
                         className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-xs font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-500 transition-all hover:scale-105"
                       >
                         <ShoppingBag className="h-4 w-4" />
-                        <span>Add to Bag</span>
+                        <span>Add to Cart</span>
                       </button>
 
                       <button
@@ -474,7 +488,7 @@ export default function AssistantPage() {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
                   Multi-Factor Evaluation Matrix
                 </h4>
-                <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-[#080b14]">
+                <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-[#080b16]">
                   <table className="w-full text-left text-xs">
                     <thead className="border-b border-slate-800 bg-slate-900/60 text-slate-400">
                       <tr>
@@ -497,7 +511,7 @@ export default function AssistantPage() {
                             />
                             <span>{row.product.name}</span>
                           </td>
-                          <td className="p-3.5 font-semibold text-cyan-300">${row.product.price}</td>
+                          <td className="p-3.5 font-semibold text-cyan-300">${row.product.price}.00</td>
                           <td className="p-3.5">
                             <span className="rounded-full bg-cyan-500/20 px-2 py-0.5 font-bold text-cyan-300">
                               {row.matchScore}%

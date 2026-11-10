@@ -3,18 +3,18 @@
 import Link from "next/link";
 import { Star, ShieldCheck, ShoppingBag, Trash2, ArrowRight, Heart } from "lucide-react";
 import { useNovatek } from "@/context/NovatekContext";
-import { NOVATEK_PRODUCTS } from "@/lib/novatekData";
+import { SMARTCART_PRODUCTS } from "@/lib/smartcartData";
 
 export default function WatchlistPage() {
   const { addToCart, setQuickViewProduct } = useNovatek();
-  const watchlistItems = [NOVATEK_PRODUCTS[0], NOVATEK_PRODUCTS[1], NOVATEK_PRODUCTS[4]];
+  const watchlistItems = [SMARTCART_PRODUCTS[0], SMARTCART_PRODUCTS[1], SMARTCART_PRODUCTS[2]];
 
   return (
     <div className="min-h-screen bg-[#07090f] py-12 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="mx-auto max-w-5xl space-y-8">
         
         {/* Header */}
-        <div className="rounded-3xl border border-slate-800 bg-[#0d1222] p-8 shadow-2xl flex items-center justify-between">
+        <div className="rounded-3xl border border-slate-800 bg-[#0d1226] p-8 shadow-2xl flex items-center justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-1 text-xs font-semibold text-cyan-400 mb-2">
               <Heart className="h-3.5 w-3.5 fill-cyan-400" />
@@ -22,7 +22,7 @@ export default function WatchlistPage() {
             </div>
             <h1 className="text-3xl font-black text-white">Your Watchlist</h1>
             <p className="mt-1 text-sm text-slate-400">
-              Track live pricing drops, inventory availability, and restock notifications.
+              Track live pricing drops, inventory availability, and restock notifications for your favorite smartphones.
             </p>
           </div>
         </div>
@@ -32,13 +32,13 @@ export default function WatchlistPage() {
           {watchlistItems.map((product) => (
             <div
               key={product.id}
-              className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-[#0a0e1c] p-5 hover:border-cyan-500/40 transition-colors"
+              className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-[#0a0e1e] p-5 hover:border-cyan-500/40 transition-colors"
             >
               <div
                 onClick={() => setQuickViewProduct(product)}
                 className="flex items-center gap-4 cursor-pointer w-full sm:w-auto"
               >
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[#07090e] p-2 border border-slate-800">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[#060810] p-2 border border-slate-800">
                   <img
                     src={product.image}
                     alt={product.name}
@@ -49,12 +49,12 @@ export default function WatchlistPage() {
                   <h3 className="text-base font-bold text-white hover:text-cyan-300">
                     {product.name}
                   </h3>
-                  <p className="text-xs text-slate-400">{product.tagline}</p>
+                  <p className="text-xs text-slate-400">{product.storageOption || "256GB"} · {product.colorName || product.brand}</p>
                   <div className="mt-1 flex items-center gap-2 text-xs text-cyan-400">
-                    <span>${product.price}</span>
+                    <span className="font-bold">${product.price}.00</span>
                     {product.originalPrice && (
                       <span className="text-slate-500 line-through">
-                        ${product.originalPrice}
+                        ${product.originalPrice}.00
                       </span>
                     )}
                   </div>

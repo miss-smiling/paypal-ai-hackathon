@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Search, ShoppingBag, User, SlidersHorizontal, Sparkles, Menu, X, ArrowRight, Globe } from "lucide-react";
+import { Search, ShoppingBag, Heart, SlidersHorizontal, Sparkles, Menu, X, ArrowRight, Globe, ChevronDown } from "lucide-react";
 import { useNovatek } from "@/context/NovatekContext";
 
 export default function NovatekNavbar() {
@@ -13,15 +13,16 @@ export default function NovatekNavbar() {
   const [taglineLangIndex, setTaglineLangIndex] = useState(0);
 
   const multilingualTaglines = [
-    { lang: "ENG", text: "Technology For Life · Upgrade Your World" },
-    { lang: "HIN", text: "जीवन के लिए तकनीक · अपनी दुनिया को अपग्रेड करें" },
-    { lang: "KAN", text: "ಜೀವನಕ್ಕಾಗಿ ತಂತ್ರಜ್ಞಾನ · ನಿಮ್ಮ ಜಗತ್ತನ್ನು ನವೀಕರಿಸಿ" },
+    { lang: "ENG", label: "English", text: "Technology For Life · Upgrade Your World" },
+    { lang: "HIN", label: "हिन्दी", text: "जीवन के लिए तकनीक · अपनी दुनिया को अपग्रेड करें" },
+    { lang: "KAN", label: "ಕನ್ನಡ", text: "ಜೀವನಕ್ಕಾಗಿ ತಂತ್ರಜ್ಞಾನ · ನಿಮ್ಮ ಜಗತ್ತನ್ನು ನವೀಕರಿಸಿ" },
+    { lang: "BEN", label: "বাংলা", text: "জীবনের জন্য প্রযুক্তি · আপনার বিশ্বকে আপগ্রেড করুন" },
   ];
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTaglineLangIndex((prev) => (prev + 1) % multilingualTaglines.length);
-    }, 3500);
+    }, 3800);
     return () => clearInterval(timer);
   }, [multilingualTaglines.length]);
 
@@ -31,10 +32,10 @@ export default function NovatekNavbar() {
   };
 
   const navLinks = [
-    { label: "Shop", href: "/#featured-products" },
+    { label: "Home", href: "/" },
+    { label: "Shop", href: "/#popular-smartphones", hasDropdown: true },
     { label: "Categories", href: "/#categories" },
-    { label: "New Arrivals", href: "/#featured-products" },
-    { label: "Deals", href: "/#deals" },
+    { label: "Deals", href: "/#best-deals" },
     {
       label: "AI Assistant",
       href: "/assistant",
@@ -46,24 +47,25 @@ export default function NovatekNavbar() {
       href: "/compare",
       badge: compareList.length > 0 ? String(compareList.length) : undefined,
     },
-    { label: "Support", href: "#care", onClick: () => setIsCareModalOpen(true) },
+    { label: "About", href: "#about", onClick: () => setIsCareModalOpen(true) },
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-[#080a11]/90 backdrop-blur-xl transition-all">
-      {/* Top Multilingual Announcement Ribbon */}
-      <div className="border-b border-slate-800/60 bg-[#06080e] px-4 py-1.5 text-center text-[11px] text-slate-400">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-[#080c18]/90 backdrop-blur-xl transition-all">
+      
+      {/* Top Multilingual Announcement Ribbon (English, Hindi, Kannada, Bengali) */}
+      <div className="border-b border-slate-800/60 bg-[#060810] px-4 py-1.5 text-center text-[11px] text-slate-400">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="hidden sm:flex items-center gap-2">
             <span className="flex h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
-            <span className="font-semibold text-slate-300">SmartCart AI</span>
+            <span className="font-bold text-white">SmartCart</span>
             <span className="text-slate-600">|</span>
-            <span className="text-cyan-400 font-medium">Autonomous Commerce Platform</span>
+            <span className="text-cyan-400 font-medium">Autonomous Multi-Agent Commerce</span>
           </div>
 
-          {/* Cycling Tagline (English, Hindi, Kannada) */}
+          {/* Cycling Tagline in 4 Languages */}
           <div className="mx-auto sm:mx-0 flex items-center gap-2">
-            <Globe className="h-3 w-3 text-cyan-400" />
+            <Globe className="h-3.5 w-3.5 text-cyan-400" />
             <span className="rounded bg-cyan-500/10 px-1.5 py-0.2 text-[9px] font-bold text-cyan-300">
               {multilingualTaglines[taglineLangIndex].lang}
             </span>
@@ -72,7 +74,7 @@ export default function NovatekNavbar() {
             </span>
           </div>
 
-          {/* Languages shortcuts */}
+          {/* Quick Language Selectors */}
           <div className="hidden md:flex items-center gap-1.5 text-[10px]">
             {multilingualTaglines.map((item, idx) => (
               <button
@@ -80,11 +82,11 @@ export default function NovatekNavbar() {
                 onClick={() => setTaglineLangIndex(idx)}
                 className={`rounded px-1.5 py-0.5 transition-colors ${
                   taglineLangIndex === idx
-                    ? "bg-cyan-500/20 text-cyan-300 font-bold"
-                    : "text-slate-500 hover:text-slate-300"
+                    ? "bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40"
+                    : "text-slate-400 hover:text-white"
                 }`}
               >
-                {item.lang}
+                {item.label}
               </button>
             ))}
           </div>
@@ -93,11 +95,12 @@ export default function NovatekNavbar() {
 
       {/* Main Navbar */}
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Left: Brand Logo */}
+        
+        {/* Left: Brand Logo (SmartCart matching the sample image) */}
         <Link href="/" className="group flex items-center gap-3">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-cyan-400 p-[1px] shadow-lg shadow-blue-600/30 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-blue-500/50">
-            <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-[#090c15]">
-              {/* Geometric 'N' Icon matching NOVATEK */}
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 p-[1.5px] shadow-lg shadow-blue-600/30 transition-transform duration-300 group-hover:scale-105">
+            <div className="flex h-full w-full items-center justify-center rounded-[14px] bg-[#090e1c]">
+              {/* Modern Stylized SmartCart 'S' Icon */}
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -107,22 +110,24 @@ export default function NovatekNavbar() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M4 20V4l16 16V4" />
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
               </svg>
             </div>
           </div>
           <div>
-            <span className="text-xl font-black tracking-widest text-white transition-colors group-hover:text-cyan-300">
-              NOVATEK
+            <span className="text-xl font-black tracking-tight text-white transition-colors group-hover:text-cyan-300">
+              SmartCart
             </span>
-            <span className="hidden sm:inline-block ml-2 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
-              SmartCart AI
+            <span className="hidden sm:inline-block ml-1.5 text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+              AI
             </span>
           </div>
         </Link>
 
         {/* Center: Desktop Navigation Links */}
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-7 lg:flex">
           {navLinks.map((link) => {
             const active = isActive(link.href);
             if (link.onClick) {
@@ -150,6 +155,9 @@ export default function NovatekNavbar() {
                   <Sparkles className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
                 )}
                 {link.label}
+                {link.hasDropdown && (
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                )}
                 {link.badge && (
                   <span
                     className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
@@ -169,7 +177,7 @@ export default function NovatekNavbar() {
           })}
         </nav>
 
-        {/* Right: Actions */}
+        {/* Right: Actions matching the top-right of sample */}
         <div className="flex items-center gap-3">
           {/* Search Button */}
           <button
@@ -180,6 +188,18 @@ export default function NovatekNavbar() {
             <Search className="h-5 w-5" />
           </button>
 
+          {/* Wishlist Heart Icon */}
+          <Link
+            href="/watchlist"
+            aria-label="Wishlist"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
+          >
+            <Heart className="h-5 w-5" />
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-sm">
+              3
+            </span>
+          </Link>
+
           {/* Compare Quick Button */}
           <Link
             href="/compare"
@@ -188,22 +208,13 @@ export default function NovatekNavbar() {
           >
             <SlidersHorizontal className="h-5 w-5" />
             {compareList.length > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[11px] font-bold text-slate-950 shadow-md shadow-cyan-500/40 animate-pulse">
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950 shadow-md shadow-cyan-500/40 animate-pulse">
                 {compareList.length}
               </span>
             )}
           </Link>
 
-          {/* User Profile */}
-          <Link
-            href="/dashboard"
-            aria-label="User Account"
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
-          >
-            <User className="h-5 w-5" />
-          </Link>
-
-          {/* Shopping Bag Button */}
+          {/* Shopping Bag Button with Live Badge */}
           <button
             onClick={() => setIsCartOpen(true)}
             aria-label="Shopping Bag"
@@ -217,10 +228,23 @@ export default function NovatekNavbar() {
             )}
           </button>
 
+          {/* User Profile Avatar (Using the clean, aesthetic circular silhouette avatar provided by user!) */}
+          <Link
+            href="/dashboard"
+            aria-label="User Account"
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-slate-700 bg-black transition-transform hover:scale-105 hover:border-cyan-400"
+          >
+            <img
+              src="/avatar.png"
+              alt="User Silhouette Avatar"
+              className="h-full w-full object-cover"
+            />
+          </Link>
+
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-300 hover:bg-slate-800 md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-300 hover:bg-slate-800 lg:hidden"
             aria-label="Toggle mobile menu"
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -230,7 +254,7 @@ export default function NovatekNavbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="border-b border-slate-800 bg-[#090c16]/95 px-4 py-5 backdrop-blur-2xl md:hidden">
+        <div className="border-b border-slate-800 bg-[#090d1c]/95 px-4 py-5 backdrop-blur-2xl lg:hidden">
           <div className="flex flex-col gap-3">
             {navLinks.map((link) => {
               if (link.onClick) {

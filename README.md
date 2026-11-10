@@ -9,7 +9,8 @@
 <p align="center">
   🌐 <strong>English:</strong> <em>Technology For Life · Upgrade Your World</em><br>
   🇮🇳 <strong>हिन्दी (Hindi):</strong> <em>जीवन के लिए तकनीक · अपनी दुनिया को अपग्रेड करें</em><br>
-  🇮🇳 <strong>ಕನ್ನಡ (Kannada):</strong> <em>ಜೀವನಕ್ಕಾಗಿ ತಂತ್ರಜ್ಞಾನ · ನಿಮ್ಮ ಜಗತ್ತನ್ನು ನವೀಕರಿಸಿ</em>
+  🇮🇳 <strong>ಕನ್ನಡ (Kannada):</strong> <em>ಜೀವನಕ್ಕಾಗಿ ತಂತ್ರಜ್ಞಾನ · ನಿಮ್ಮ ಜಗತ್ತನ್ನು ನವೀಕರಿಸಿ</em><br>
+  🇮🇳 <strong>বাংলা (Bengali):</strong> <em>জীবনের জন্য প্রযুক্তি · আপনার বিশ্বকে আপগ্রেড করুন</em>
 </p>
 
 <p align="center">

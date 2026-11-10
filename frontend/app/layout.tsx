@@ -12,15 +12,15 @@ import NovaAIFloatingWidget from "@/components/NovaAIFloatingWidget";
 import ToastContainer from "@/components/ToastContainer";
 
 export const metadata: Metadata = {
-  title: "NOVATEK — Technology For Life | Autonomous Tech Commerce",
+  title: "SmartCart — Better Tech. Brighter Tomorrow. | Autonomous Multi-Agent Commerce",
   description:
-    "Upgrade your world with innovative tech. Discover precision titanium smartphones, M2 laptops, high-res audio, and smart wearables powered by autonomous AI assistance.",
+    "Upgrade your world with SmartCart AI. Discover flagship smartphones (iPhone 16 Pro, Galaxy S24, Pixel 9), real-time spec comparisons, and PayPal checkout.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark scroll-smooth">
-      <body className="min-h-screen bg-[#080a11] font-sans text-slate-100 antialiased flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
+      <body className="min-h-screen bg-[#070a14] font-sans text-slate-100 antialiased flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
         
         {/* Ambient Dark Neon Gradients */}
         <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(37,99,235,0.12),rgba(255,255,255,0))]" />

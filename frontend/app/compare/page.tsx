@@ -19,7 +19,7 @@ import {
   Award,
 } from "lucide-react";
 import { useNovatek } from "@/context/NovatekContext";
-import { NOVATEK_PRODUCTS, NovatekProduct } from "@/lib/novatekData";
+import { SMARTCART_PRODUCTS, SmartCartProduct } from "@/lib/smartcartData";
 
 export default function ComparePage() {
   const {
@@ -35,57 +35,62 @@ export default function ComparePage() {
   const [onlyDifferences, setOnlyDifferences] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  // If user has fewer than 2 items, ensure we show at least 2 by default
+  // Default comparison: iPhone 16 Pro vs Samsung Galaxy S24
   const activeProducts =
     compareList.length > 0
       ? compareList
-      : [NOVATEK_PRODUCTS[0], NOVATEK_PRODUCTS[2]]; // NovaPhone 15 Pro vs NovaBook Air M2
+      : [SMARTCART_PRODUCTS[0], SMARTCART_PRODUCTS[1]];
 
   // Spec Rows definition
   interface SpecDefinition {
     id: string;
     label: string;
-    category: "Overview" | "Performance" | "Battery & Power" | "Build & Design" | "Connectivity & Ports";
-    getValue: (p: NovatekProduct) => string | number | undefined;
+    category: "Overview" | "Silicon & Performance" | "Battery & Charging" | "Chassis & Build" | "Camera & Optics";
+    getValue: (p: SmartCartProduct) => string | number | undefined;
   }
 
   const specRows: SpecDefinition[] = [
     // Overview
+    { id: "brand", label: "Manufacturer Brand", category: "Overview", getValue: (p) => p.brand },
     { id: "category", label: "Category", category: "Overview", getValue: (p) => p.category },
-    { id: "price", label: "Price", category: "Overview", getValue: (p) => `$${p.price}` },
-    { id: "rating", label: "Rating", category: "Overview", getValue: (p) => `${p.rating} / 5.0 (${p.reviewCount} reviews)` },
-    { id: "trust", label: "Verified Trust Score", category: "Overview", getValue: (p) => `${p.trustScore}% Verified` },
+    { id: "price", label: "Price", category: "Overview", getValue: (p) => `$${p.price}.00` },
+    { id: "rating", label: "Customer Rating", category: "Overview", getValue: (p) => `${p.rating} / 5.0 (${p.reviewCount} reviews)` },
+    { id: "trust", label: "Verified Buyer Trust Score", category: "Overview", getValue: (p) => `${p.trustScore}% Verified` },
     
-    // Performance
-    { id: "processor", label: "Processor & Architecture", category: "Performance", getValue: (p) => p.specs.processor || p.specs.audio || "Custom Novatek Edge Core" },
-    { id: "display", label: "Display / Optics / Acoustics", category: "Performance", getValue: (p) => p.specs.display || p.specs.audio || p.specs.camera || "Standard Output" },
-    { id: "storage", label: "Storage & Memory", category: "Performance", getValue: (p) => p.specs.storage || "Onboard Memory" },
+    // Silicon & Performance
+    { id: "processor", label: "Processor & Architecture", category: "Silicon & Performance", getValue: (p) => p.specs.processor || "Flagship Core" },
+    { id: "display", label: "Display Size & Resolution", category: "Silicon & Performance", getValue: (p) => p.specs.display || "OLED High Refresh" },
+    { id: "storage", label: "Storage & Memory", category: "Silicon & Performance", getValue: (p) => p.specs.storage || p.storageOption || "256GB" },
     
-    // Battery & Power
-    { id: "battery", label: "Battery Playback / Runtime", category: "Battery & Power", getValue: (p) => p.specs.battery || "AC Powered" },
-    { id: "charging", label: "Fast Charging / Power Input", category: "Battery & Power", getValue: (p) => p.specs.charging || p.specs.ports || "Fast Charge Supported" },
+    // Battery & Charging
+    { id: "battery", label: "Battery Playback / Capacity", category: "Battery & Charging", getValue: (p) => p.specs.battery || "All-Day Endurance" },
+    { id: "charging", label: "Fast Charging Speed", category: "Battery & Charging", getValue: (p) => p.specs.charging || "Fast Charge Supported" },
     
-    // Build & Design
-    { id: "build", label: "Materials & Chassis", category: "Build & Design", getValue: (p) => p.specs.build || "Anodized Finish" },
-    { id: "weight", label: "Weight", category: "Build & Design", getValue: (p) => p.specs.weight || "Lightweight" },
-    { id: "waterResistance", label: "Water & Ingress Rating", category: "Build & Design", getValue: (p) => p.specs.waterResistance || "Standard Indoor Rated" },
+    // Chassis & Build
+    { id: "build", label: "Chassis Material & Frame", category: "Chassis & Build", getValue: (p) => p.specs.build || "Aerospace Grade" },
+    { id: "weight", label: "Weight", category: "Chassis & Build", getValue: (p) => p.specs.weight || "Lightweight" },
+    { id: "waterResistance", label: "Water & Ingress Rating", category: "Chassis & Build", getValue: (p) => p.specs.waterResistance || "IP68 Water Resistant" },
     
-    // Connectivity & Ports
-    { id: "connectivity", label: "Wireless & Cellular", category: "Connectivity & Ports", getValue: (p) => p.specs.connectivity || "Bluetooth & Wi-Fi" },
-    { id: "ports", label: "Physical I/O Ports", category: "Connectivity & Ports", getValue: (p) => p.specs.ports || p.specs.charging || "USB-C Port" },
-    { id: "warranty", label: "Novatek Warranty", category: "Connectivity & Ports", getValue: (p) => p.specs.warranty || "1-Year Standard Care" },
+    // Camera & Optics
+    { id: "camera", label: "Camera System", category: "Camera & Optics", getValue: (p) => p.specs.camera || "Pro Multi-Lens Array" },
+    { id: "connectivity", label: "5G & Connectivity", category: "Camera & Optics", getValue: (p) => p.specs.connectivity || "5G · Wi-Fi 7" },
+    { id: "warranty", label: "SmartCart Care Warranty", category: "Camera & Optics", getValue: (p) => p.specs.warranty || "SmartCart 1-Year Protection" },
   ];
 
-  // Helper to determine if values in a row differ
   const rowDiffers = (spec: SpecDefinition) => {
     const values = activeProducts.map((p) => String(spec.getValue(p) ?? ""));
     return new Set(values).size > 1;
   };
 
-  const categories = ["Overview", "Performance", "Battery & Power", "Build & Design", "Connectivity & Ports"] as const;
+  const categories = [
+    "Overview",
+    "Silicon & Performance",
+    "Battery & Charging",
+    "Chassis & Build",
+    "Camera & Optics",
+  ] as const;
 
-  // Catalog items not yet in compare
-  const unselectedProducts = NOVATEK_PRODUCTS.filter(
+  const unselectedProducts = SMARTCART_PRODUCTS.filter(
     (p) => !activeProducts.some((ap) => ap.id === p.id)
   );
 
@@ -98,13 +103,13 @@ export default function ComparePage() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-1 text-xs font-semibold tracking-wider text-cyan-400 uppercase">
               <SlidersHorizontal className="h-3.5 w-3.5" />
-              <span>Side-by-Side Spec Matrix</span>
+              <span>SmartCart Device Comparison</span>
             </div>
             <h1 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">
               Device Comparison Studio
             </h1>
             <p className="mt-1 text-sm text-slate-400 max-w-2xl">
-              Compare architectural benchmarks, battery longevity, silicon performance, and verified buyer trust scores across up to 4 devices simultaneously.
+              Compare processor benchmarks, battery playback, titanium builds, and verified review trust scores across up to 4 devices simultaneously.
             </p>
           </div>
 
@@ -116,14 +121,14 @@ export default function ComparePage() {
                 className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-500 transition-all"
               >
                 <Plus className="h-4 w-4" />
-                <span>Add Product ({activeProducts.length}/4)</span>
+                <span>Add Device ({activeProducts.length}/4)</span>
               </button>
             )}
 
             {activeProducts.length > 0 && (
               <button
                 onClick={clearCompare}
-                className="rounded-xl border border-slate-800 bg-[#0d1222] px-3.5 py-2.5 text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800"
+                className="rounded-xl border border-slate-800 bg-[#0d1224] px-3.5 py-2.5 text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800"
               >
                 Clear All
               </button>
@@ -132,9 +137,8 @@ export default function ComparePage() {
         </div>
 
         {/* Controls Bar: Toggle Highlights */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-[#0d111d] p-4 text-xs">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-[#0d1222] p-4 text-xs">
           <div className="flex flex-wrap items-center gap-6">
-            {/* Toggle Highlight Differences */}
             <label className="flex cursor-pointer items-center gap-2.5">
               <input
                 type="checkbox"
@@ -145,7 +149,6 @@ export default function ComparePage() {
               <span className="font-semibold text-white">Highlight Differences</span>
             </label>
 
-            {/* Toggle Only Show Differences */}
             <label className="flex cursor-pointer items-center gap-2.5">
               <input
                 type="checkbox"
@@ -164,17 +167,17 @@ export default function ComparePage() {
         </div>
 
         {/* Comparison Matrix Table */}
-        <div className="mt-8 overflow-x-auto rounded-3xl border border-slate-800 bg-[#0b0e1a] shadow-2xl">
+        <div className="mt-8 overflow-x-auto rounded-3xl border border-slate-800 bg-[#0b0f1e] shadow-2xl">
           <div className="min-w-[800px]">
             
             {/* Sticky Product Cards Header Row */}
-            <div className="grid grid-cols-12 border-b border-slate-800 bg-[#090c17] p-6 gap-4">
+            <div className="grid grid-cols-12 border-b border-slate-800 bg-[#090d1a] p-6 gap-4">
               <div className="col-span-3 flex flex-col justify-end">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Products ({activeProducts.length})
+                  Devices ({activeProducts.length})
                 </span>
                 <p className="text-xs text-slate-400 mt-1">
-                  Select &quot;Add Product&quot; to include other devices from the catalog.
+                  Select &quot;Add Device&quot; to include other models from the catalog.
                 </p>
               </div>
 
@@ -184,7 +187,7 @@ export default function ComparePage() {
                 return (
                   <div
                     key={product.id}
-                    className={`col-span-${colSpan} flex flex-col justify-between rounded-2xl border border-slate-800/80 bg-[#0e1424] p-4 relative group`}
+                    className={`col-span-${colSpan} flex flex-col justify-between rounded-2xl border border-slate-800/80 bg-[#0e162c] p-4 relative group`}
                     style={{ gridColumn: `span ${colSpan} / span ${colSpan}` }}
                   >
                     {/* Remove button */}
@@ -223,23 +226,23 @@ export default function ComparePage() {
                       </h3>
                       <div className="mt-1 flex items-baseline gap-2">
                         <span className="text-base font-black text-white">
-                          ${product.price}
+                          ${product.price}.00
                         </span>
                         {product.originalPrice && (
                           <span className="text-xs text-slate-500 line-through">
-                            ${product.originalPrice}
+                            ${product.originalPrice}.00
                           </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Quick Add to Bag */}
+                    {/* Quick Add to Cart */}
                     <button
                       onClick={() => addToCart(product)}
                       className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-500 transition-all hover:scale-105"
                     >
                       <ShoppingBag className="h-3.5 w-3.5" />
-                      <span>Add to Bag</span>
+                      <span>Add to Cart</span>
                     </button>
                   </div>
                 );
@@ -266,7 +269,7 @@ export default function ComparePage() {
               return (
                 <div key={catName} className="border-b border-slate-800/80">
                   {/* Category Section Header */}
-                  <div className="bg-[#080a13] px-6 py-3 text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+                  <div className="bg-[#080b16] px-6 py-3 text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-2">
                     <Layers className="h-3.5 w-3.5" />
                     <span>{catName}</span>
                   </div>
@@ -339,10 +342,10 @@ export default function ComparePage() {
             </div>
             <div>
               <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">
-                AI COMPARISON VERDICT
+                SMARTCART AI VERDICT
               </span>
               <h2 className="text-xl font-bold text-white">
-                Summary & Decision Matrix
+                Decision & Spec Comparison Matrix
               </h2>
             </div>
           </div>
@@ -351,11 +354,11 @@ export default function ComparePage() {
             {activeProducts.map((product) => (
               <div
                 key={product.id}
-                className="rounded-2xl border border-slate-800 bg-[#090d1c] p-5 space-y-3"
+                className="rounded-2xl border border-slate-800 bg-[#090e1f] p-5 space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white">{product.name}</h3>
-                  <span className="text-xs font-bold text-cyan-300">${product.price}</span>
+                  <span className="text-xs font-bold text-cyan-300">${product.price}.00</span>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   {product.description}
@@ -376,12 +379,12 @@ export default function ComparePage() {
             onClick={() => setPickerOpen(false)}
           >
             <div
-              className="relative w-full max-w-lg rounded-3xl border border-slate-700 bg-[#0c101e] p-6 shadow-2xl animate-slide-up"
+              className="relative w-full max-w-lg rounded-3xl border border-slate-700 bg-[#0c1224] p-6 shadow-2xl animate-slide-up"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-lg font-bold text-white">Select Device to Compare</h3>
               <p className="text-xs text-slate-400 mt-1">
-                Choose a product from our engineered catalog to add to the comparison matrix.
+                Choose a smartphone from our verified catalog to add to the comparison matrix.
               </p>
 
               <div className="mt-4 max-h-96 overflow-y-auto space-y-2 pr-1">
@@ -397,10 +400,10 @@ export default function ComparePage() {
                         addToCompare(p);
                         setPickerOpen(false);
                       }}
-                      className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-800 bg-[#080b14] p-3 transition-colors hover:border-cyan-400/50 hover:bg-slate-900"
+                      className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-800 bg-[#080c18] p-3 transition-colors hover:border-cyan-400/50 hover:bg-slate-900"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#06080e] p-1 border border-slate-800">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#060810] p-1 border border-slate-800">
                           <img
                             src={p.image}
                             alt={p.name}
@@ -409,7 +412,7 @@ export default function ComparePage() {
                         </div>
                         <div>
                           <h4 className="text-xs font-bold text-white">{p.name}</h4>
-                          <span className="text-[10px] text-slate-400">{p.category} · ${p.price}</span>
+                          <span className="text-[10px] text-slate-400">{p.brand} · ${p.price}.00</span>
                         </div>
                       </div>
 

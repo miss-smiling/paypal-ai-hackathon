@@ -10,7 +10,7 @@ export default function SearchModal() {
 
   if (!isSearchOpen) return null;
 
-  const quickTags = ["Noise Cancelling", "Titanium", "GaN Charger", "M2 Laptop", "4K Security", "Smartwatch"];
+  const quickTags = ["iPhone 16 Pro", "Galaxy S24", "Pixel 9", "OnePlus 12", "Titanium", "AirPods"];
 
   const filtered = query.trim()
     ? products.filter(
@@ -41,7 +41,7 @@ export default function SearchModal() {
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search Novatek tech, chips, specs, or accessories..."
+            placeholder="Search SmartCart smartphones, chips, cameras, or specs..."
             className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none"
           />
           {query && (

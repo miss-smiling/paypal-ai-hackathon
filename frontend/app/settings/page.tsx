@@ -11,7 +11,7 @@ export default function SettingsPage() {
   const [autoApplyDeals, setAutoApplyDeals] = useState(true);
 
   const handleSave = () => {
-    addToast("Preferences Saved", "Your Novatek account settings have been updated.", "success");
+    addToast("Preferences Saved", "Your SmartCart account settings have been updated.", "success");
   };
 
   return (

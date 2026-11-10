@@ -1,10 +1,10 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { NOVATEK_PRODUCTS, NovatekProduct, PROMO_CODES } from "@/lib/novatekData";
+import { SMARTCART_PRODUCTS, SmartCartProduct, PROMO_CODES } from "@/lib/smartcartData";
 
 export interface CartItem {
-  product: NovatekProduct;
+  product: SmartCartProduct;
   quantity: number;
 }
 
@@ -15,10 +15,10 @@ interface ToastMessage {
   message: string;
 }
 
-interface NovatekContextType {
-  products: NovatekProduct[];
+interface SmartCartContextType {
+  products: SmartCartProduct[];
   cart: CartItem[];
-  addToCart: (product: NovatekProduct, quantity?: number) => void;
+  addToCart: (product: SmartCartProduct, quantity?: number) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -32,10 +32,10 @@ interface NovatekContextType {
   removePromoCode: () => void;
   
   // Compare state
-  compareList: NovatekProduct[];
-  addToCompare: (product: NovatekProduct) => boolean;
+  compareList: SmartCartProduct[];
+  addToCompare: (product: SmartCartProduct) => boolean;
   removeFromCompare: (productId: string) => void;
-  toggleCompare: (product: NovatekProduct) => void;
+  toggleCompare: (product: SmartCartProduct) => void;
   clearCompare: () => void;
   isComparing: (productId: string) => boolean;
 
@@ -46,8 +46,8 @@ interface NovatekContextType {
   setIsSearchOpen: (open: boolean) => void;
   isCareModalOpen: boolean;
   setIsCareModalOpen: (open: boolean) => void;
-  quickViewProduct: NovatekProduct | null;
-  setQuickViewProduct: (product: NovatekProduct | null) => void;
+  quickViewProduct: SmartCartProduct | null;
+  setQuickViewProduct: (product: SmartCartProduct | null) => void;
 
   // Toast
   toasts: ToastMessage[];
@@ -55,13 +55,13 @@ interface NovatekContextType {
   removeToast: (id: string) => void;
 }
 
-const NovatekContext = createContext<NovatekContextType | undefined>(undefined);
+const SmartCartContext = createContext<SmartCartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = "novatek_cart_v1";
-const COMPARE_STORAGE_KEY = "novatek_compare_v1";
+const CART_STORAGE_KEY = "smartcart_cart_v2";
+const COMPARE_STORAGE_KEY = "smartcart_compare_v2";
 
 export function NovatekProvider({ children }: { children: React.ReactNode }) {
-  const [products] = useState<NovatekProduct[]>(NOVATEK_PRODUCTS);
+  const [products] = useState<SmartCartProduct[]>(SMARTCART_PRODUCTS);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
@@ -70,27 +70,37 @@ export function NovatekProvider({ children }: { children: React.ReactNode }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCareModalOpen, setIsCareModalOpen] = useState(false);
-  const [quickViewProduct, setQuickViewProduct] = useState<NovatekProduct | null>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<SmartCartProduct | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Load from localStorage on mount
+  // Load from localStorage or initialize with sample cart items from screenshot
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem(CART_STORAGE_KEY);
       if (savedCart) {
         setCart(JSON.parse(savedCart));
       } else {
-        // Preload default hero headphones so cart has a realistic item ready
-        const defaultProduct = NOVATEK_PRODUCTS.find((p) => p.id === "novasound-max") || NOVATEK_PRODUCTS[1];
-        setCart([{ product: defaultProduct, quantity: 1 }]);
+        // Preload sample items matching the right-hand panel in the uploaded design:
+        // 1. iPhone 16 Pro ($1199)
+        // 2. Samsung Galaxy S24 ($999)
+        // 3. AirPods Pro 2 ($249)
+        const p1 = SMARTCART_PRODUCTS.find((p) => p.id === "iphone-16-pro") || SMARTCART_PRODUCTS[0];
+        const p2 = SMARTCART_PRODUCTS.find((p) => p.id === "samsung-galaxy-s24") || SMARTCART_PRODUCTS[1];
+        const p3 = SMARTCART_PRODUCTS.find((p) => p.id === "airpods-pro-2") || SMARTCART_PRODUCTS[SMARTCART_PRODUCTS.length - 1];
+
+        setCart([
+          { product: p1, quantity: 1 },
+          { product: p2, quantity: 1 },
+          { product: p3, quantity: 1 },
+        ]);
       }
       
       const savedCompare = localStorage.getItem(COMPARE_STORAGE_KEY);
       if (savedCompare) {
         setCompareIds(JSON.parse(savedCompare));
       } else {
-        // Preload 2 comparison items by default: NovaPhone 15 Pro & NovaBook Air M2
-        setCompareIds(["novaphone-15-pro", "novawatch-x"]);
+        // Preload 2 comparison items: iPhone 16 Pro vs Samsung Galaxy S24
+        setCompareIds(["iphone-16-pro", "samsung-galaxy-s24"]);
       }
     } catch {
       // LocalStorage fallback
@@ -126,7 +136,7 @@ export function NovatekProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const addToCart = (product: NovatekProduct, quantity = 1) => {
+  const addToCart = (product: SmartCartProduct, quantity = 1) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
@@ -138,12 +148,12 @@ export function NovatekProvider({ children }: { children: React.ReactNode }) {
       }
       return [...prev, { product, quantity }];
     });
-    addToast("Added to Bag", `${product.name} is now in your shopping bag.`, "success");
+    addToast("Added to Cart", `${product.name} is now in your SmartCart bag.`, "success");
   };
 
   const removeFromCart = (productId: string) => {
     setCart((prev) => prev.filter((item) => item.product.id !== productId));
-    addToast("Item Removed", "Removed item from bag.", "info");
+    addToast("Item Removed", "Removed item from cart.", "info");
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -171,7 +181,7 @@ export function NovatekProvider({ children }: { children: React.ReactNode }) {
       addToast("Promo Applied!", `${promo.description} (${promo.discountPercent}% OFF)`, "success");
       return { success: true, message: promo.description };
     }
-    addToast("Invalid Code", "Please check your promo code and try again.", "error");
+    addToast("Invalid Code", "Please check your promo code (e.g. SMART10 or HACKATHON20).", "error");
     return { success: false, message: "Invalid promo code" };
   };
 
@@ -180,7 +190,7 @@ export function NovatekProvider({ children }: { children: React.ReactNode }) {
     setPromoDiscountPct(0);
   };
 
-  const addToCompare = (product: NovatekProduct): boolean => {
+  const addToCompare = (product: SmartCartProduct): boolean => {
     if (compareIds.length >= 4) {
       addToast("Compare Limit Reached", "You can compare up to 4 devices at once.", "error");
       return false;
@@ -197,7 +207,7 @@ export function NovatekProvider({ children }: { children: React.ReactNode }) {
     setCompareIds((prev) => prev.filter((id) => id !== productId));
   };
 
-  const toggleCompare = (product: NovatekProduct) => {
+  const toggleCompare = (product: SmartCartProduct) => {
     if (compareIds.includes(product.id)) {
       removeFromCompare(product.id);
       addToast("Removed from Compare", `${product.name} removed from comparison.`, "info");
@@ -214,17 +224,17 @@ export function NovatekProvider({ children }: { children: React.ReactNode }) {
 
   const compareList = compareIds
     .map((id) => products.find((p) => p.id === id))
-    .filter((p): p is NovatekProduct => Boolean(p));
+    .filter((p): p is SmartCartProduct => Boolean(p));
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   const discount = Math.round((subtotal * promoDiscountPct) / 100);
-  // Free shipping on orders over $99
-  const shipping = subtotal > 99 || subtotal === 0 ? 0 : 15;
+  // Free shipping on orders over $50
+  const shipping = subtotal > 50 || subtotal === 0 ? 0 : 15;
   const total = Math.max(0, subtotal - discount + shipping);
 
   return (
-    <NovatekContext.Provider
+    <SmartCartContext.Provider
       value={{
         products,
         cart,
@@ -260,12 +270,12 @@ export function NovatekProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
-    </NovatekContext.Provider>
+    </SmartCartContext.Provider>
   );
 }
 
 export function useNovatek() {
-  const context = useContext(NovatekContext);
+  const context = useContext(SmartCartContext);
   if (!context) {
     throw new Error("useNovatek must be used within a NovatekProvider");
   }

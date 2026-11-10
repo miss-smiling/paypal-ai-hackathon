@@ -47,27 +47,25 @@ export default function InsightsPanel({
         <input
           type="number"
           min={0}
-          placeholder="Session Budget (e.g. 150)"
+          placeholder="Session budget, e.g. 150"
           value={budgetInput}
           onChange={(e) => onBudgetInputChange(e.target.value)}
-          className="w-full rounded-xl border border-slate-800 bg-slate-950/80 px-3.5 py-2 text-xs text-slate-100 placeholder-slate-500 focus:border-indigo-500/50 focus:outline-none"
+          className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-xs text-slate-100 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
         />
         <button
           onClick={onSetBudget}
-          className="rounded-xl bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700"
+          className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-indigo-500"
         >
           Set
         </button>
       </div>
 
-      {/* Spend Tracker Progress Bar */}
       {budget && (
         <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 text-xs space-y-2">
           <div className="flex justify-between font-medium">
-            <span className="text-slate-400">Total Spent</span>
-            <span className="text-slate-200">{money(budget.spent, currency)}</span>
+            <span className="text-slate-300">Spent</span>
+            <span className="text-slate-100">{money(budget.spent, currency)}</span>
           </div>
-
           {budget.budget !== null && (
             <>
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
@@ -76,7 +74,7 @@ export default function InsightsPanel({
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <p className={`text-[11px] ${budget.exceeded ? "text-red-400 font-semibold" : "text-slate-400"}`}>
+              <p className={`text-[11px] ${budget.exceeded ? "text-red-400 font-semibold" : "text-slate-300"}`}>
                 {budget.exceeded
                   ? `Over budget by ${money(-(budget.remaining ?? 0), currency)}`
                   : `${money(budget.remaining ?? 0, currency)} remaining of ${money(budget.budget, currency)}`}
@@ -87,28 +85,27 @@ export default function InsightsPanel({
       )}
 
       {insights && (
-        <div className="flex justify-between text-xs text-slate-400 border-t border-slate-800/60 pt-3">
-          <span>Searches: <strong className="text-slate-200">{insights.searches}</strong></span>
-          <span>Completed Orders: <strong className="text-slate-200">{insights.orders_completed}</strong></span>
-        </div>
+        <p className="text-xs text-slate-300 border-t border-slate-800/60 pt-3">
+          <strong className="text-white">{insights.searches}</strong> search(es) · <strong className="text-white">{insights.orders_completed}</strong> completed order(s)
+        </p>
       )}
 
-      {/* Orders List */}
       {orders.length > 0 && (
         <div className="border-t border-slate-800/60 pt-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Order History
+            Orders
           </h3>
           <ul className="mt-3 divide-y divide-slate-800/50 text-xs">
             {orders.map((o) => (
               <li key={o.id} className="flex justify-between py-2.5">
-                <div className="flex flex-col">
-                  <span className="font-medium text-slate-200">{o.product_name}</span>
-                  <span className="text-[10px] text-slate-500">
-                    Status: <span className="text-cyan-400">{o.status}</span> {o.mock ? "(mock)" : ""}
+                <span className="text-slate-200">
+                  {o.product_name}
+                  <span className="ml-2 text-[10px] text-cyan-400">
+                    {o.status}
+                    {o.mock ? " (mock)" : ""}
                   </span>
-                </div>
-                <span className="font-semibold text-slate-300">{money(o.total, o.currency)}</span>
+                </span>
+                <span className="font-semibold text-slate-100">{money(o.total, o.currency)}</span>
               </li>
             ))}
           </ul>

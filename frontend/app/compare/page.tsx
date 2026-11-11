@@ -25,6 +25,8 @@ import { useSmartCart } from "@/context/SmartCartContext";
 import { productService, watchlistService } from "@/lib/services";
 import { Product } from "@/lib/types";
 import { formatINR } from "@/lib/mockData";
+import PayPalLogo from "@/components/ui/PayPalLogo";
+import { Gift } from "lucide-react";
 
 export default function ComparePage() {
   const { compareIds, removeFromCompare, clearCompare, addToCompare, addToast } =
@@ -217,6 +219,29 @@ export default function ComparePage() {
         </div>
       </div>
 
+      {/* 10% PayPal Discount Banner */}
+      <div className="rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50/90 via-violet-50/60 to-blue-50/90 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-xs">
+            <Gift className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900">
+              Dual Checkout Guarantee: Save 10% on Every Product with PayPal
+            </h3>
+            <p className="text-[11px] text-slate-500">
+              Register on SmartCart to unlock coupon code <strong className="font-mono text-indigo-700">SMART10</strong> and get an instant 10% discount on total cost when paying with PayPal — or visit Amazon / Flipkart to pay standard price.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/signup"
+          className="shrink-0 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 transition-colors shadow-xs"
+        >
+          Register for 10% Off
+        </Link>
+      </div>
+
       {/* SECTION B: Side-by-Side Product Cards Header */}
       <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-soft">
         <div className="min-w-[760px]">
@@ -271,13 +296,21 @@ export default function ComparePage() {
                       {p.name}
                     </Link>
 
-                    <div className="mt-2 flex items-baseline gap-2">
-                      <span className="text-lg font-black text-slate-900">
-                        {formatINR(p.price)}
-                      </span>
-                      <span className="text-xs text-slate-400 line-through">
-                        {formatINR(p.originalPrice)}
-                      </span>
+                    {/* Dual Pricing Display */}
+                    <div className="mt-2.5 p-2 rounded-xl bg-indigo-50/70 border border-indigo-100/70 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-indigo-700 flex items-center gap-1">
+                          <PayPalLogo variant="monogram" className="h-3.5" />
+                          <span>With PayPal:</span>
+                        </span>
+                        <span className="text-xs font-black text-indigo-700">
+                          {formatINR(Math.round(p.price * 0.9))}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-slate-500">
+                        <span>On {p.retailer}:</span>
+                        <span className="font-semibold text-slate-700">{formatINR(p.price)}</span>
+                      </div>
                     </div>
 
                     <div className="mt-1 flex items-center gap-1 text-xs text-amber-600 font-semibold">
@@ -289,20 +322,34 @@ export default function ComparePage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
-                    <button
-                      onClick={() => handleSaveToWatchlist(p)}
-                      className="flex-1 py-1.5 rounded-xl border border-slate-200 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 text-slate-700 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <Heart className="h-3.5 w-3.5" />
-                      <span>Watch</span>
-                    </button>
+                  {/* Dual Action CTAs */}
+                  <div className="mt-3 pt-3 border-t border-slate-100 space-y-1.5">
                     <Link
-                      href={`/product/${p.id}`}
-                      className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold transition-colors"
+                      href={`/checkout?productId=${p.id}&coupon=SMART10`}
+                      className="w-full py-2 px-2.5 rounded-xl bg-[#0070ba] hover:bg-[#005ea6] text-white text-[11px] font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
                     >
-                      Details
+                      <PayPalLogo variant="white" className="h-3.5" />
+                      <span>Pay with PayPal (10% OFF)</span>
                     </Link>
+
+                    <div className="flex items-center gap-1.5">
+                      <a
+                        href={p.retailerUrl || "https://amazon.in"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 py-1.5 px-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors"
+                      >
+                        <span>Visit {p.retailer}</span>
+                        <ExternalLink className="h-3 w-3 text-slate-400" />
+                      </a>
+                      <button
+                        onClick={() => handleSaveToWatchlist(p)}
+                        className="p-1.5 rounded-xl border border-slate-200 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 text-slate-700 text-xs transition-colors"
+                        title="Add to Watchlist"
+                      >
+                        <Heart className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

@@ -876,3 +876,66 @@ export const MOCK_SAVED_CONVERSATIONS: SavedConversation[] = [
     messages: [],
   },
 ];
+
+export interface Coupon {
+  code: string;
+  discountPct: number;
+  description: string;
+  minSpend?: number;
+  requiresRegistration: boolean;
+  requiresPayPal: boolean;
+}
+
+export const REGISTRATION_COUPON: Coupon = {
+  code: "SMART10",
+  discountPct: 10,
+  description: "10% off total cost when you pay with PayPal on SmartCart",
+  requiresRegistration: true,
+  requiresPayPal: true,
+};
+
+export const AVAILABLE_COUPONS: Coupon[] = [
+  REGISTRATION_COUPON,
+  {
+    code: "WELCOME10",
+    discountPct: 10,
+    description: "Welcome 10% discount for registered shoppers using PayPal",
+    requiresRegistration: true,
+    requiresPayPal: true,
+  },
+  {
+    code: "PAYPAL10",
+    discountPct: 10,
+    description: "10% PayPal AI Hackathon special discount on total order",
+    requiresRegistration: true,
+    requiresPayPal: true,
+  },
+];
+
+export const calculateDiscount = (
+  subtotal: number,
+  couponCode?: string,
+  paymentMethod: "paypal" | "card" | "upi" = "paypal"
+): { discount: number; isEligible: boolean; message: string } => {
+  if (!couponCode) {
+    return { discount: 0, isEligible: false, message: "" };
+  }
+  const cleanCode = couponCode.trim().toUpperCase();
+  const matched = AVAILABLE_COUPONS.find((c) => c.code === cleanCode);
+  if (!matched) {
+    return { discount: 0, isEligible: false, message: "Invalid coupon code." };
+  }
+  if (matched.requiresPayPal && paymentMethod !== "paypal") {
+    return {
+      discount: 0,
+      isEligible: false,
+      message: "This coupon is exclusively valid when paying with PayPal on SmartCart.",
+    };
+  }
+  const discount = Math.round(subtotal * (matched.discountPct / 100));
+  return {
+    discount,
+    isEligible: true,
+    message: `${matched.discountPct}% Discount applied via coupon ${matched.code}!`,
+  };
+};

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import Footer from "./Footer";
 import SearchModal from "./SearchModal";
 import ToastContainer from "@/components/ui/ToastContainer";
 import { useSmartCart } from "@/context/SmartCartContext";
@@ -19,15 +20,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isAuthPage) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col justify-center">
-        {children}
+      <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
+        <div className="flex-1 flex flex-col justify-center">
+          {children}
+        </div>
+        <Footer />
         <ToastContainer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
       {/* Sidebar navigation */}
       <Sidebar />
 
@@ -36,7 +40,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Main page content area */}
       <main
-        className={`flex-1 transition-all duration-300 pb-16 ${
+        className={`flex-1 transition-all duration-300 pb-12 ${
           sidebarCollapsed ? "md:pl-20" : "md:pl-64"
         }`}
       >
@@ -44,6 +48,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </main>
+
+      {/* Global Footer with PayPal Hackathon notice */}
+      <div
+        className={`transition-all duration-300 ${
+          sidebarCollapsed ? "md:pl-20" : "md:pl-64"
+        }`}
+      >
+        <Footer />
+      </div>
 
       {/* Global Modals & Toasts */}
       <SearchModal />

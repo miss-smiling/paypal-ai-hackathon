@@ -23,6 +23,7 @@ import { useSmartCart } from "@/context/SmartCartContext";
 import { productService, budgetService, watchlistService, alertService, historyService } from "@/lib/services";
 import { Product, BudgetPlan, ShoppingHistoryEvent } from "@/lib/types";
 import { formatINR } from "@/lib/mockData";
+import PayPalLogo from "@/components/ui/PayPalLogo";
 
 export default function DashboardPage() {
   const { user, addToCompare, isComparing, addToast } = useSmartCart();
@@ -67,8 +68,8 @@ export default function DashboardPage() {
           </h1>
 
           <p className="text-sm sm:text-base text-indigo-100/90 leading-relaxed max-w-2xl">
-            Your smarter way to shop starts here. SmartCart AI tracks specifications,
-            evaluates genuine buyer sentiment across Amazon and Flipkart, and guards your budget without sponsored bias.
+            Your smarter way to shop starts here. SmartCart tracks specifications,
+            evaluates genuine buyer sentiment across Amazon and Flipkart, and saves you an extra 10% on total cost when paying with PayPal.
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -349,12 +350,18 @@ export default function DashboardPage() {
               {/* Price & Action */}
               <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
                 <div>
-                  <div className="text-lg font-black text-slate-900">
-                    {formatINR(laptop.price)}
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-lg font-black text-slate-900">
+                      {formatINR(laptop.price)}
+                    </span>
+                    <span className="text-[11px] text-slate-400 line-through">
+                      {formatINR(laptop.originalPrice)}
+                    </span>
                   </div>
-                  <span className="text-[11px] text-slate-400 line-through">
-                    {formatINR(laptop.originalPrice)}
-                  </span>
+                  <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                    <PayPalLogo variant="monogram" className="h-2.5" />
+                    <span>{formatINR(Math.round(laptop.price * 0.9))} with 10% OFF</span>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2">

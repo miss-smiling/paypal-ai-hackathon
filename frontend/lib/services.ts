@@ -463,7 +463,7 @@ export const chatService = {
     return {
       id: "msg-" + Date.now(),
       sender: "cart",
-      text: `I've analyzed our shopping database for "${query}". SmartCart AI continuously monitors product specs, price movements across Amazon and Flipkart, and genuine verified review sentiment so you don't get tricked by sponsored listings.`,
+      text: `I've analyzed our shopping database for "${query}". SmartCart continuously monitors product specs, price movements across Amazon and Flipkart, and genuine verified review sentiment so you don't get tricked by sponsored listings. Plus, you can save 10% on your entire order when paying with PayPal!`,
       timestamp: "Just now",
       aiVerdict:
         "Would you like me to find the best value recommendations for your budget, compare specific models side-by-side, or help you allocate your shopping budget?",

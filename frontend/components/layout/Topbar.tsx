@@ -85,7 +85,7 @@ export default function Topbar() {
     >
       <div className="flex h-full items-center justify-between px-4 sm:px-6">
         {/* Left: Mobile hamburger & Search trigger */}
-        <div className="flex items-center gap-3 flex-1 max-w-xl">
+        <div className="flex items-center gap-2.5 sm:gap-3 flex-1 max-w-xl">
           <button
             onClick={() => setMobileMenuOpen(true)}
             className="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"
@@ -93,6 +93,14 @@ export default function Topbar() {
           >
             <Menu className="h-5 w-5" />
           </button>
+
+          <Link
+            href="/dashboard"
+            className="md:hidden flex items-center gap-1.5 shrink-0 mr-1"
+          >
+            <img src="/logo.png" alt="SmartCart" className="h-7 w-7 object-contain" />
+            <span className="text-sm font-black text-slate-900">SmartCart</span>
+          </Link>
 
           {/* Quick Search Bar */}
           <div

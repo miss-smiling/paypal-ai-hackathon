@@ -99,10 +99,11 @@ export default function NovatekFooter() {
         {/* Bottom Line */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>
-            © 2026 SmartCart. All rights reserved.
+            All Rights are Reserved ,made For PayPal AI Hackathon
           </div>
 
           <div className="flex items-center gap-6">
+            <span className="text-[#0070ba] font-bold">PayPal Verified</span>
             <a href="#privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</a>
             <a href="#terms" className="hover:text-slate-300 transition-colors">Terms & Conditions</a>
           </div>

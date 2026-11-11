@@ -1,32 +1,92 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Lock,
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
   Clock,
-  ShoppingBag,
-  CreditCard,
+  ExternalLink,
+  Tag,
+  Gift,
+  AlertCircle,
+  HelpCircle,
 } from "lucide-react";
 import { useSmartCart } from "@/context/SmartCartContext";
 import { productService } from "@/lib/services";
-import { formatINR } from "@/lib/mockData";
+import { Product } from "@/lib/types";
+import { formatINR, calculateDiscount } from "@/lib/mockData";
+import PayPalLogo from "@/components/ui/PayPalLogo";
 
-export default function CheckoutPage() {
-  const { addToast } = useSmartCart();
+function CheckoutContent() {
+  const searchParams = useSearchParams();
+  const { addToast, appliedCoupon, isRegistered } = useSmartCart();
+
+  const productIdParam = searchParams.get("productId");
+  const couponParam = searchParams.get("coupon");
+
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedMethod, setSelectedMethod] = useState<"paypal" | "card" | "upi">("paypal");
+  const [couponCode, setCouponCode] = useState(couponParam || appliedCoupon || "SMART10");
+  const [appliedCode, setAppliedCode] = useState<string | null>(
+    couponParam || appliedCoupon || (isRegistered ? "SMART10" : null)
+  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
 
-  const sampleProducts = productService.getAll().slice(0, 2);
-  const subtotal = sampleProducts.reduce((sum, p) => sum + p.price, 0);
-  const discount = 3000;
+  // Products in checkout
+  const [items, setItems] = useState<Product[]>([]);
+
+  useEffect(() => {
+    if (productIdParam) {
+      const found = productService.getById(productIdParam);
+      if (found) {
+        setItems([found]);
+        return;
+      }
+    }
+    // Default to top 2 products
+    setItems(productService.getAll().slice(0, 2));
+  }, [productIdParam]);
+
+  const subtotal = items.reduce((sum, p) => sum + p.price, 0);
+
+  // 10% Discount calculation
+  const discountResult = calculateDiscount(subtotal, appliedCode || undefined, selectedMethod);
+  const discountAmount = discountResult.discount;
   const shipping = 0;
-  const total = subtotal - discount + shipping;
+  const total = Math.max(0, subtotal - discountAmount + shipping);
+
+  const handleApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!couponCode.trim()) return;
+
+    if (!isRegistered && couponCode.toUpperCase() === "SMART10") {
+      addToast(
+        "Registration Required",
+        "Please register or log in to use the 10% discount coupon SMART10.",
+        "warning"
+      );
+      return;
+    }
+
+    const res = calculateDiscount(subtotal, couponCode, selectedMethod);
+    if (res.isEligible) {
+      setAppliedCode(couponCode.trim().toUpperCase());
+      addToast("Coupon Applied!", res.message, "success");
+    } else {
+      addToast("Coupon Not Applied", res.message || "Invalid coupon.", "error");
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCode(null);
+    setCouponCode("");
+    addToast("Coupon Removed", "Standard price restored.", "info");
+  };
 
   const handleProceedToPayment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,11 +96,15 @@ export default function CheckoutPage() {
   const handleConfirmPayment = () => {
     setIsProcessing(true);
     setTimeout(() => {
-      const generatedId = `SC-${Math.floor(100000 + Math.random() * 900000)}`;
+      const generatedId = `PP-SC-${Math.floor(100000 + Math.random() * 900000)}`;
       setOrderId(generatedId);
       setIsProcessing(false);
       setStep(3);
-      addToast("Order Placed Successfully!", `SmartCart Order #${generatedId} confirmed.`, "success");
+      addToast(
+        "PayPal Payment Approved!",
+        `Order #${generatedId} confirmed with 10% SmartCart discount.`,
+        "success"
+      );
     }, 1200);
   };
 
@@ -95,24 +159,30 @@ export default function CheckoutPage() {
               <CheckCircle2 className="h-10 w-10" />
             </div>
 
+            <div className="flex items-center justify-center gap-2">
+              <PayPalLogo className="h-5" />
+              <span className="text-sm font-bold text-slate-700">Payment Captured</span>
+            </div>
+
             <h2 className="text-2xl font-black text-slate-900">Order Placed Successfully!</h2>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Your transaction has been approved and logged against your shopping budget.
+              Your transaction was processed with 10% SmartCart discount via PayPal.
+              Tracking details and proof of purchase have been recorded.
             </p>
             <div className="inline-block rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-2 font-mono text-sm font-bold text-indigo-700">
-              Tracking #{orderId}
+              PayPal Reference #{orderId}
             </div>
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
-                href="/orders"
-                className="rounded-xl bg-indigo-600 px-6 py-3 text-xs font-bold text-white hover:bg-indigo-700"
+                href="/history"
+                className="rounded-xl bg-indigo-600 px-6 py-3 text-xs font-bold text-white hover:bg-indigo-700 transition-colors"
               >
-                View Order Details
+                View Shopping History
               </Link>
               <Link
                 href="/dashboard"
-                className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 Return to Dashboard
               </Link>
@@ -122,7 +192,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-5 saas-card p-6 space-y-4">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Clock className="h-4 w-4 text-indigo-600" />
-              <span>Fulfillment Status</span>
+              <span>Fulfillment &amp; Savings Status</span>
             </h3>
 
             <div className="space-y-4 text-xs pt-2">
@@ -131,8 +201,10 @@ export default function CheckoutPage() {
                   ✓
                 </div>
                 <div>
-                  <p className="font-bold text-slate-900">Order Confirmed</p>
-                  <p className="text-[11px] text-slate-400">Payment processed via PayPal Sandbox</p>
+                  <p className="font-bold text-slate-900">10% Discount Applied</p>
+                  <p className="text-[11px] text-emerald-600 font-semibold">
+                    Saved {formatINR(discountAmount)} with coupon SMART10
+                  </p>
                 </div>
               </div>
 
@@ -141,18 +213,18 @@ export default function CheckoutPage() {
                   ✓
                 </div>
                 <div>
-                  <p className="font-bold text-slate-900">Budget Earmarked</p>
-                  <p className="text-[11px] text-slate-400">Deducted from Q4 Tech Budget</p>
+                  <p className="font-bold text-slate-900">PayPal Express Orders v2</p>
+                  <p className="text-[11px] text-slate-400">Captured at {formatINR(total)}</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 opacity-60">
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 text-slate-400 text-[10px]">
-                  •
+              <div className="flex items-start gap-3">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-[10px]">
+                  ✓
                 </div>
                 <div>
-                  <p className="font-bold text-slate-600">Dispatched</p>
-                  <p className="text-[11px] text-slate-400">Expected delivery in 2 business days</p>
+                  <p className="font-bold text-slate-900">Budget Auto-Deduction</p>
+                  <p className="text-[11px] text-slate-400">Recorded against your monthly tech budget</p>
                 </div>
               </div>
             </div>
@@ -236,40 +308,56 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="space-y-3">
+                  {/* Option A: PayPal Express (With 10% Discount) */}
                   <div
                     onClick={() => setSelectedMethod("paypal")}
-                    className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${
+                    className={`relative cursor-pointer rounded-2xl border-2 p-4 transition-all ${
                       selectedMethod === "paypal"
-                        ? "border-indigo-600 bg-indigo-50/50 ring-1 ring-indigo-600"
-                        : "border-slate-200 bg-white"
+                        ? "border-[#0070ba] bg-blue-50/40 ring-2 ring-blue-100"
+                        : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <CreditCard className="h-5 w-5 text-indigo-600" />
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">PayPal Express Sandbox</p>
-                        <p className="text-[10px] text-slate-500">Orders v2 REST · Buyer Protection</p>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-slate-200 shadow-2xs">
+                          <PayPalLogo variant="monogram" className="h-6" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <PayPalLogo className="h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                              10% Discount Eligible
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-600 mt-1">
+                            Pay with PayPal on SmartCart to enjoy 10% off your total order!
+                          </p>
+                        </div>
                       </div>
+                      <span className="text-sm font-black text-indigo-700 shrink-0">
+                        {formatINR(total)}
+                      </span>
                     </div>
-                    <span className="text-xs font-black text-[#0070ba]">PayPal</span>
                   </div>
 
+                  {/* Fallback UPI / Card */}
                   <div
                     onClick={() => setSelectedMethod("upi")}
-                    className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${
+                    className={`flex cursor-pointer items-center justify-between rounded-xl border p-3.5 transition-all ${
                       selectedMethod === "upi"
                         ? "border-indigo-600 bg-indigo-50/50 ring-1 ring-indigo-600"
                         : "border-slate-200 bg-white"
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <CreditCard className="h-5 w-5 text-emerald-600" />
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">Instant UPI / QR Code</p>
-                        <p className="text-[10px] text-slate-500">Google Pay, PhonePe, Paytm</p>
-                      </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">Direct UPI / QR Code</p>
+                      <p className="text-[10px] text-slate-400">
+                        *Note: 10% coupon SMART10 requires PayPal checkout.
+                      </p>
                     </div>
-                    <span className="text-xs font-bold text-emerald-600">UPI</span>
+                    <span className="text-xs font-bold text-slate-500">
+                      {formatINR(subtotal)}
+                    </span>
                   </div>
                 </div>
 
@@ -277,28 +365,61 @@ export default function CheckoutPage() {
                   <button
                     disabled={isProcessing}
                     onClick={handleConfirmPayment}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-xs font-bold text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#0070ba] hover:bg-[#005ea6] py-3 text-xs font-bold text-white shadow-sm transition-all hover:scale-[1.01] disabled:opacity-50"
                   >
                     {isProcessing ? (
-                      <span>Connecting Gateway...</span>
+                      <span>Connecting to PayPal Sandbox...</span>
                     ) : (
                       <>
-                        <span>Authorize Payment ({formatINR(total)})</span>
-                        <ArrowRight className="h-4 w-4" />
+                        <PayPalLogo variant="white" className="h-4" />
+                        <span>
+                          Pay with PayPal · {formatINR(total)}
+                          {discountAmount > 0 && ` (Save ${formatINR(discountAmount)})`}
+                        </span>
+                        <ArrowRight className="h-4 w-4 ml-1" />
                       </>
                     )}
                   </button>
 
                   <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
                     <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" />
-                    <span>256-bit encrypted checkout sandbox</span>
+                    <span>Official PayPal Buyer Protection Guarantee</span>
                   </div>
                 </div>
               </div>
             )}
+
+            {/* DUAL OPTION NOTICE: Prefer to buy on Retailer directly? */}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800">
+                  Prefer to Buy Directly on the Retailer Website?
+                </span>
+                <span className="text-[10px] text-slate-500 font-semibold uppercase">
+                  Standard Full Price
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                If you prefer not to pay with PayPal on SmartCart, you can visit the respective retailer (Amazon / Flipkart) and pay their regular price of{" "}
+                <strong>{formatINR(subtotal)}</strong> without our 10% savings.
+              </p>
+              {items[0]?.retailerUrl && (
+                <div className="pt-1">
+                  <a
+                    href={items[0].retailerUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline"
+                  >
+                    <span>Visit {items[0].retailer} store directly</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Right Order Summary */}
+          {/* Right Order Summary & Coupon Code Box */}
           <div className="lg:col-span-5 space-y-4">
             <div className="saas-card p-5 space-y-4">
               <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">
@@ -306,7 +427,7 @@ export default function CheckoutPage() {
               </h3>
 
               <div className="space-y-3">
-                {sampleProducts.map((p) => (
+                {items.map((p) => (
                   <div key={p.id} className="flex items-center gap-3">
                     <img
                       src={p.image}
@@ -317,7 +438,9 @@ export default function CheckoutPage() {
                       <h4 className="text-xs font-bold text-slate-900 truncate">
                         {p.name}
                       </h4>
-                      <p className="text-[11px] text-slate-400">{p.retailer}</p>
+                      <p className="text-[11px] text-slate-400">
+                        Retailer: {p.retailer}
+                      </p>
                     </div>
                     <span className="text-xs font-bold text-slate-900">
                       {formatINR(p.price)}
@@ -326,21 +449,87 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
+              {/* Coupon Box */}
+              <div className="pt-3 border-t border-slate-100 space-y-2">
+                <label className="block text-xs font-bold text-slate-700">
+                  Registration Coupon (10% Discount)
+                </label>
+
+                {appliedCode ? (
+                  <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/70 p-2 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <Tag className="h-3.5 w-3.5 text-emerald-600" />
+                      <span className="font-mono font-bold text-emerald-800">
+                        {appliedCode}
+                      </span>
+                      <span className="text-[11px] text-emerald-700">
+                        (10% Off Applied)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="text-[11px] font-bold text-rose-600 hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter code (e.g. SMART10)"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs uppercase font-mono font-bold text-slate-900 focus:outline-none focus:border-indigo-500"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 transition-colors"
+                    >
+                      Apply
+                    </button>
+                  </form>
+                )}
+
+                {!isRegistered && (
+                  <div className="flex items-start gap-1.5 text-[11px] text-amber-700 bg-amber-50 p-2 rounded-xl border border-amber-200">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-600" />
+                    <span>
+                      To get the 10% discount,{" "}
+                      <Link href="/signup" className="font-bold underline hover:text-amber-900">
+                        register yourself
+                      </Link>{" "}
+                      to unlock coupon code SMART10.
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Price Calculations */}
               <div className="space-y-1.5 pt-3 border-t border-slate-100 text-xs">
                 <div className="flex justify-between text-slate-500">
                   <span>Subtotal</span>
                   <span>{formatINR(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-emerald-600 font-semibold">
-                  <span>Festive Discount</span>
-                  <span>-{formatINR(discount)}</span>
-                </div>
+
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-bold">
+                    <span className="flex items-center gap-1">
+                      <Gift className="h-3.5 w-3.5" />
+                      <span>SmartCart 10% Discount ({appliedCode})</span>
+                    </span>
+                    <span>-{formatINR(discountAmount)}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between text-slate-500">
-                  <span>Delivery</span>
+                  <span>Delivery Charge</span>
                   <span className="text-emerald-600 font-semibold">Free</span>
                 </div>
+
                 <div className="flex justify-between border-t border-slate-100 pt-2 text-base font-black text-slate-900">
-                  <span>Grand Total</span>
+                  <span>Total Due</span>
                   <span className="text-indigo-600">{formatINR(total)}</span>
                 </div>
               </div>
@@ -349,5 +538,20 @@ export default function CheckoutPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="py-20 text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+          <p className="mt-2 text-xs text-slate-500">Loading checkout...</p>
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   );
 }

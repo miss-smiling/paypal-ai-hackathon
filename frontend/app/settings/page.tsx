@@ -74,7 +74,7 @@ export default function SettingsPage() {
           Account & Shopping Preferences
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Customize your SmartCart AI profile, shopping category priorities, default budgets, and price alert thresholds.
+          Customize your SmartCart profile, shopping category priorities, default budgets, and price alert thresholds.
         </p>
       </div>
 

@@ -4,9 +4,9 @@ import { SmartCartProvider } from "@/context/SmartCartContext";
 import AppShell from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
-  title: "SmartCart AI — Intelligent Shopping & Product Comparison Platform",
+  title: "SmartCart — Intelligent Shopping & Product Comparison Platform",
   description:
-    "AI-powered shopping intelligence that helps you understand what is actually worth buying. Compare products across Amazon & Flipkart, manage budgets, and track price drops.",
+    "SmartCart helps you understand what is actually worth buying. Compare products across Amazon & Flipkart, manage budgets, and save 10% when paying with PayPal on our platform.",
 };
 
 export default function RootLayout({

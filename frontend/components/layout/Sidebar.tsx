@@ -98,13 +98,17 @@ export default function Sidebar() {
             onClick={() => setMobileMenuOpen(false)}
             className="flex items-center gap-2.5 group overflow-hidden"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-              <Sparkles className="h-5 w-5" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white border border-slate-200/80 p-1 shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="SmartCart Logo"
+                className="h-full w-full object-contain"
+              />
             </div>
             {!sidebarCollapsed && (
               <div className="flex flex-col">
-                <span className="text-base font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
-                  SmartCart <span className="text-indigo-600 font-black">AI</span>
+                <span className="text-base font-bold tracking-tight text-slate-900">
+                  SmartCart
                 </span>
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                   Shopping Intelligence

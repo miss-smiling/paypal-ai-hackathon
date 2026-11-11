@@ -23,9 +23,13 @@ interface SmartCartContextType {
   searchModalOpen: boolean;
   setSearchModalOpen: (open: boolean) => void;
 
-  // User
+  // User & Registration
   user: UserProfile;
   updateUser: (updates: Partial<UserProfile>) => void;
+  isRegistered: boolean;
+  setIsRegistered: (reg: boolean) => void;
+  appliedCoupon: string | null;
+  setAppliedCoupon: (code: string | null) => void;
 
   // Dynamic counts for badges
   watchlistCount: number;
@@ -59,6 +63,8 @@ export function SmartCartProvider({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [user, setUser] = useState<UserProfile>(userService.get());
+  const [isRegistered, setIsRegistered] = useState(true);
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>("SMART10");
   const [watchlistCount, setWatchlistCount] = useState(0);
   const [alertCount, setAlertCount] = useState(0);
   const [compareIds, setCompareIds] = useState<string[]>([
@@ -187,6 +193,10 @@ export function SmartCartProvider({ children }: { children: React.ReactNode }) {
         setSearchModalOpen,
         user,
         updateUser,
+        isRegistered,
+        setIsRegistered,
+        appliedCoupon,
+        setAppliedCoupon,
         watchlistCount,
         alertCount,
         refreshCounts,

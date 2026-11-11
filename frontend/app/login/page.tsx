@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles, ArrowRight, ShieldCheck, Lock, Mail } from "lucide-react";
+import { ArrowRight, ShieldCheck, Lock, Mail, Gift } from "lucide-react";
 import { useSmartCart } from "@/context/SmartCartContext";
 
 export default function LoginPage() {
@@ -18,31 +18,43 @@ export default function LoginPage() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      addToast("Signed In Successfully", "Welcome back to SmartCart AI.", "success");
+      addToast("Signed In Successfully", "Welcome back to SmartCart.", "success");
       router.push("/dashboard");
     }, 600);
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 sm:p-8 animate-fade-in">
-      <div className="saas-card p-8 space-y-6 shadow-xl border border-slate-200">
+    <div className="w-full max-w-md mx-auto p-4 sm:p-6 my-6 animate-fade-in">
+      <div className="saas-card p-6 sm:p-8 space-y-6 shadow-xl border border-slate-200">
         {/* Brand */}
         <div className="text-center space-y-2">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20 mb-1">
-            <Sparkles className="h-6 w-6" />
-          </div>
+          <Link href="/dashboard" className="inline-flex items-center gap-2 mb-1 group">
+            <div className="h-12 w-12 rounded-2xl bg-white border border-slate-200 p-1.5 shadow-sm group-hover:scale-105 transition-transform">
+              <img
+                src="/logo.png"
+                alt="SmartCart"
+                className="h-full w-full object-contain"
+              />
+            </div>
+          </Link>
           <h1 className="text-2xl font-black text-slate-900">
-            Sign In to SmartCart AI
+            Sign In to SmartCart
           </h1>
           <p className="text-xs text-slate-500">
-            Enter your credentials to access your shopping dashboard
+            Enter your credentials to access your shopping intelligence dashboard
           </p>
         </div>
 
-        {/* Demo Notice */}
-        <div className="p-3 rounded-xl bg-indigo-50/80 border border-indigo-100 text-[11px] text-indigo-900 flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-indigo-600 shrink-0" />
-          <span>Demo Sandbox: Any email/password will authenticate immediately.</span>
+        {/* 10% Registration Callout */}
+        <div className="p-3 rounded-xl bg-indigo-50/80 border border-indigo-100 text-xs text-indigo-900 flex items-center gap-2.5">
+          <Gift className="h-4 w-4 text-indigo-600 shrink-0" />
+          <span>
+            New here?{" "}
+            <Link href="/signup" className="font-bold underline hover:text-indigo-950">
+              Register now
+            </Link>{" "}
+            to unlock your 10% discount code (SMART10) with PayPal!
+          </span>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
@@ -97,7 +109,7 @@ export default function LoginPage() {
               <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <span>Sign In to Dashboard</span>
+                <span>Sign In to SmartCart</span>
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
@@ -107,7 +119,7 @@ export default function LoginPage() {
         <div className="text-center text-xs text-slate-500 pt-2 border-t border-slate-100">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="font-bold text-indigo-600 hover:underline">
-            Create an Account
+            Register &amp; Claim 10% Discount
           </Link>
         </div>
       </div>

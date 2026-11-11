@@ -3,6 +3,12 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/sujitkr268/paypal-ai-hackathon/actions/workflows/ci.yml">
+    <img src="https://github.com/sujitkr268/paypal-ai-hackathon/actions/workflows/ci.yml/badge.svg" alt="CI status">
+  </a>
+</p>
+
+<p align="center">
   <strong>An autonomous multi-agent commerce platform transforming conversational search into verified discoveries, real-time value comparisons, and optimized shopping carts.</strong>
 </p>
 

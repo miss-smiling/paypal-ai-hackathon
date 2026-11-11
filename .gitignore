@@ -17,3 +17,7 @@ frontend/out/
 # Local frontend env
 frontend/.env.local
 *.tsbuildinfo
+
+# OS junk
+Thumbs.db
+desktop.ini

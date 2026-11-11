@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useSmartCart } from "@/context/SmartCartContext";
 import { formatINR } from "@/lib/mockData";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Topbar() {
   const {
@@ -138,6 +139,9 @@ export default function Topbar() {
             <Sparkles className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Ask CART</span>
           </Link>
+
+          {/* Light / dark theme toggle */}
+          <ThemeToggle />
 
           {/* Notifications Dropdown */}
           <div className="relative" ref={notificationRef}>

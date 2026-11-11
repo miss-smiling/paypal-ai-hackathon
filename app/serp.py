@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import os
+import time
 from typing import Any
 
 import httpx
@@ -13,8 +15,11 @@ from app.config import settings
 
 logger = logging.getLogger("smartcart.serp")
 
-# In-memory cache so repeated queries use 0 API credits and respond in 0ms
-_SEARCH_CACHE: dict[str, list[dict[str, Any]]] = {}
+# In-memory cache so repeated queries use 0 API credits and respond in 0ms.
+# Entries expire so prices stay fresh and the cache cannot grow unbounded.
+_CACHE_TTL_SECONDS = float(os.getenv("SERP_CACHE_TTL", "900"))  # 15 minutes
+_CACHE_MAX_ENTRIES = 200
+_SEARCH_CACHE: dict[str, tuple[float, list[dict[str, Any]]]] = {}
 
 # Reusable HTTP client with persistent connection pool to eliminate TLS handshake overhead
 _HTTP_CLIENT = httpx.AsyncClient(
@@ -31,8 +36,11 @@ async def search_indian_market(query: str, category: str | None = None, max_pric
     # Normalized cache key
     clean_q = " ".join(query.strip().lower().split())
     cache_key = f"{clean_q}:{max_price}"
-    if cache_key in _SEARCH_CACHE:
-        return _SEARCH_CACHE[cache_key]
+    cached = _SEARCH_CACHE.get(cache_key)
+    if cached and time.monotonic() - cached[0] < _CACHE_TTL_SECONDS:
+        return cached[1]
+    if cached:
+        del _SEARCH_CACHE[cache_key]  # expired
 
     params = {
         "engine": "google_shopping_light",
@@ -92,5 +100,9 @@ async def search_indian_market(query: str, category: str | None = None, max_pric
         register_live_product(prod)
         products.append(prod)
 
-    _SEARCH_CACHE[cache_key] = products
+    if len(_SEARCH_CACHE) >= _CACHE_MAX_ENTRIES:
+        # Drop the oldest half to keep memory bounded.
+        for k in sorted(_SEARCH_CACHE, key=lambda key: _SEARCH_CACHE[key][0])[: _CACHE_MAX_ENTRIES // 2]:
+            del _SEARCH_CACHE[k]
+    _SEARCH_CACHE[cache_key] = (time.monotonic(), products)
     return products

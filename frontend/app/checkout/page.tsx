@@ -17,7 +17,9 @@ import {
 } from "lucide-react";
 import { useSmartCart } from "@/context/SmartCartContext";
 import { productService } from "@/lib/services";
-import { Product } from "@/lib/types";
+import { api, ApiError } from "@/lib/api";
+import { getSessionId } from "@/lib/session";
+import { Product, Order, CreatedOrder } from "@/lib/types";
 import { formatINR, calculateDiscount } from "@/lib/mockData";
 import PayPalLogo from "@/components/ui/PayPalLogo";
 
@@ -36,6 +38,10 @@ function CheckoutContent() {
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  // Real backend order flow state.
+  const [backendOrder, setBackendOrder] = useState<Order | null>(null);
+  const [approveUrl, setApproveUrl] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string[] | null>(null);
 
   // Products in checkout
   const [items, setItems] = useState<Product[]>([]);
@@ -93,19 +99,80 @@ function CheckoutContent() {
     setStep(2);
   };
 
-  const handleConfirmPayment = () => {
+  // Places the order through the real backend: risk checks → PayPal order → capture.
+  // If the backend is unreachable, falls back to the local demo flow.
+  const handleConfirmPayment = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
-      const generatedId = `PP-SC-${Math.floor(100000 + Math.random() * 900000)}`;
-      setOrderId(generatedId);
-      setIsProcessing(false);
-      setStep(3);
-      addToast(
-        "PayPal Payment Approved!",
-        `Order #${generatedId} confirmed with 10% SmartCart discount.`,
-        "success"
+    setPaymentError(null);
+    try {
+      const created: CreatedOrder = await api.createOrder(
+        getSessionId(),
+        items.length === 1 ? items[0].id : null,
+        appliedCode,
+        true, // clicking the PayPal button is the explicit approval
+        `chk-${crypto.randomUUID()}`,
+        items.length > 1 ? items.map((p) => p.id) : undefined,
       );
-    }, 1200);
+      setBackendOrder(created);
+      setApproveUrl(created.approve_url ?? null);
+
+      if (created.approve_url) {
+        // Real PayPal sandbox flow: the buyer must approve on PayPal before capture.
+        setStep(3);
+        addToast(
+          "Approve on PayPal",
+          "Complete the approval in the PayPal window, then confirm here to capture the payment.",
+          "info"
+        );
+        return;
+      }
+
+      // Mock PayPal mode (no sandbox credentials): capture completes immediately.
+      const captured = await api.capture(created.id);
+      setBackendOrder(captured);
+      setOrderId(captured.id);
+      setStep(3);
+      addToast("PayPal Payment Approved!", `Order #${captured.id} confirmed.`, "success");
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 403) {
+        const reasons = e.reasons.length ? e.reasons : ["Payment blocked by risk check"];
+        setPaymentError(reasons);
+        addToast("Payment Blocked", reasons.join(" · "), "error");
+      } else {
+        // Backend unreachable — keep the demo usable with a simulated order.
+        const generatedId = `PP-SC-${Math.floor(100000 + Math.random() * 900000)}`;
+        setOrderId(generatedId);
+        setStep(3);
+        addToast(
+          "Demo order placed",
+          "Backend unreachable — the order was simulated locally.",
+          "warning"
+        );
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Captures the payment after the buyer approves in the PayPal window (real flow).
+  const handleCaptureAfterApproval = async () => {
+    if (!backendOrder) return;
+    setIsProcessing(true);
+    try {
+      const captured = await api.capture(backendOrder.id);
+      setBackendOrder(captured);
+      setOrderId(captured.id);
+      setApproveUrl(null);
+      addToast("Payment Captured!", `Order #${captured.id} is confirmed.`, "success");
+    } catch {
+      addToast(
+        "Not approved yet",
+        "PayPal hasn't approved this order. Approve it first, then retry.",
+        "error"
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -161,17 +228,53 @@ function CheckoutContent() {
 
             <div className="flex items-center justify-center gap-2">
               <PayPalLogo className="h-5" />
-              <span className="text-sm font-bold text-slate-700">Payment Captured</span>
+              <span className="text-sm font-bold text-slate-700">
+                {approveUrl ? "Awaiting PayPal Approval" : "Payment Captured"}
+              </span>
             </div>
 
-            <h2 className="text-2xl font-black text-slate-900">Order Placed Successfully!</h2>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Your transaction was processed with 10% SmartCart discount via PayPal.
-              Tracking details and proof of purchase have been recorded.
-            </p>
-            <div className="inline-block rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-2 font-mono text-sm font-bold text-indigo-700">
-              PayPal Reference #{orderId}
-            </div>
+            {approveUrl ? (
+              <>
+                <h2 className="text-2xl font-black text-slate-900">
+                  Almost there — approve on PayPal
+                </h2>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  PayPal opened in a new window (or use the link below). After approving,
+                  come back and confirm to capture the payment.
+                </p>
+                <div className="pt-2 flex flex-col items-center gap-3">
+                  <a
+                    href={approveUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0070ba] hover:underline"
+                  >
+                    Open PayPal approval page
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                  <button
+                    onClick={handleCaptureAfterApproval}
+                    disabled={isProcessing}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-[#0070ba] hover:bg-[#005ea6] px-6 py-3 text-xs font-bold text-white shadow-sm transition-all disabled:opacity-50"
+                  >
+                    {isProcessing ? "Capturing payment..." : "I've approved — complete my order"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-black text-slate-900">Order Placed Successfully!</h2>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Your transaction was processed with 10% SmartCart discount via PayPal.
+                  Tracking details and proof of purchase have been recorded.
+                </p>
+              </>
+            )}
+            {orderId && (
+              <div className="inline-block rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-2 font-mono text-sm font-bold text-indigo-700">
+                PayPal Reference #{orderId}
+              </div>
+            )}
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
@@ -362,6 +465,19 @@ function CheckoutContent() {
                 </div>
 
                 <div className="pt-4 space-y-3">
+                  {paymentError && (
+                    <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-rose-700">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <span>Payment blocked by risk checks</span>
+                      </div>
+                      <ul className="list-disc pl-5 text-[11px] text-rose-600 space-y-0.5">
+                        {paymentError.map((r) => (
+                          <li key={r}>{r}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <button
                     disabled={isProcessing}
                     onClick={handleConfirmPayment}

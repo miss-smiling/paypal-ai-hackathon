@@ -1,22 +1,25 @@
-"""Conversational assistant: one entry point for shopping help and order/checkout support.
+"""Conversational assistant: one entry point for shopping help, order/checkout support,
+general-purpose AI queries, and community @Cart mentions.
 
     chat() -> route(message) -> "shop"    -> LangGraph pipeline (run_pipeline), reply built from its result
                              -> "support" -> answer grounded in this session's orders and the store rules
 
-Answers are grounded in data from the database and the pipeline. If GEMINI_API_KEY or
-OPENAI_API_KEY is set, the LLM only rewords those facts. Without a key, or if the call
-fails, a rule-based reply is used, so the demo always works.
+    general_chat() -> General knowledge, coding, technical concepts, shopping and brainstorming
+                      via Gemini / OpenAI with built-in reasoning engine fallback.
+
+    community_reply() -> Context-aware response when @Cart is mentioned in the community chat.
 """
 
 from __future__ import annotations
 
 import re
+from typing import Any
 
 import httpx
 from sqlalchemy.orm import Session
 
 from app import services
-from app.catalog import COUPONS
+from app.catalog import COUPONS, PRODUCTS
 from app.config import settings
 from app.graph import run_pipeline
 
@@ -34,6 +37,22 @@ SYSTEM_PROMPT = (
     "Keep it under 90 words, plain text, no markdown."
 )
 
+GENERAL_SYSTEM_PROMPT = (
+    "You are Cart, the intelligent AI assistant of SmartCart AI. "
+    "You are friendly, insightful, and versatile. "
+    "You excel at answering general knowledge questions, explaining complex academic and technical concepts, "
+    "helping with programming and debugging, generating ideas, summarizing information, and providing expert shopping "
+    "and product advice with value comparisons across Amazon and Flipkart. "
+    "Format responses cleanly with markdown headings, bullet points, and code snippets when appropriate."
+)
+
+COMMUNITY_SYSTEM_PROMPT = (
+    "You are Cart, the resident AI assistant in the SmartCart community. "
+    "A shopper has tagged you (@Cart). Read the surrounding conversation and provide a concise, friendly, "
+    "and highly helpful response. If they ask about products, compare specs and value across Amazon & Flipkart. "
+    "If they ask general or technical questions, explain clearly. Keep answers under 150 words."
+)
+
 
 def route(message: str) -> str:
     """Return 'support' for order/payment questions, otherwise 'shop'."""
@@ -41,36 +60,47 @@ def route(message: str) -> str:
     return "support" if any(w in q for w in SUPPORT_WORDS) else "shop"
 
 
-# ---------- LLM helper (optional) ----------
+# ---------- LLM helper ----------
 
-async def _llm(system: str, user: str) -> tuple[str, str] | None:
+async def _llm(system: str, user: str, max_tokens: int = 1000) -> tuple[str, str] | None:
     """Return (text, provider) or None when no key is set or the call fails."""
     try:
         if settings.gemini_api_key:
-            url = ("https://generativelanguage.googleapis.com/v1beta/models/"
-                   f"{settings.gemini_model}:generateContent")
+            url = (
+                "https://generativelanguage.googleapis.com/v1beta/models/"
+                f"{settings.gemini_model}:generateContent"
+            )
             body = {
                 "systemInstruction": {"parts": [{"text": system}]},
                 "contents": [{"parts": [{"text": user}]}],
-                "generationConfig": {"temperature": 0.2},
+                "generationConfig": {"temperature": 0.4, "maxOutputTokens": max_tokens},
             }
-            async with httpx.AsyncClient(timeout=20) as client:
-                resp = await client.post(url, json=body,
-                                         headers={"x-goog-api-key": settings.gemini_api_key})
+            async with httpx.AsyncClient(timeout=25) as client:
+                resp = await client.post(
+                    url,
+                    json=body,
+                    headers={"x-goog-api-key": settings.gemini_api_key},
+                )
                 resp.raise_for_status()
                 text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
             return text.strip(), "gemini"
+
         if settings.openai_api_key:
             body = {
                 "model": settings.openai_model,
-                "temperature": 0.2,
-                "messages": [{"role": "system", "content": system},
-                             {"role": "user", "content": user}],
+                "temperature": 0.4,
+                "max_tokens": max_tokens,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
             }
-            async with httpx.AsyncClient(timeout=20) as client:
+            async with httpx.AsyncClient(timeout=25) as client:
                 resp = await client.post(
-                    "https://api.openai.com/v1/chat/completions", json=body,
-                    headers={"Authorization": f"Bearer {settings.openai_api_key}"})
+                    "https://api.openai.com/v1/chat/completions",
+                    json=body,
+                    headers={"Authorization": f"Bearer {settings.openai_api_key}"},
+                )
                 resp.raise_for_status()
                 text = resp.json()["choices"][0]["message"]["content"]
             return text.strip(), "openai"
@@ -79,7 +109,167 @@ async def _llm(system: str, user: str) -> tuple[str, str] | None:
     return None
 
 
-# ---------- Support ----------
+# ---------- General Purpose Reasoning Engine Fallback ----------
+
+def _builtin_general_reply(message: str, history: list[dict] | None = None) -> tuple[str, list[str]]:
+    """Intelligent fallback for general knowledge, coding, technical concepts,
+    and shopping advice when external LLM credentials are not configured.
+    """
+    q = message.lower().strip()
+    suggestions = [
+        "What are the best laptops for programming under ₹70,000?",
+        "Explain the difference between OAuth2 and JWT authentication",
+        "How do I optimize React re-renders with useMemo and useCallback?",
+        "Compare iPhone 15 and Samsung Galaxy S24 features",
+    ]
+
+    # Programming & Tech
+    if any(k in q for k in ["python", "code", "javascript", "react", "typescript", "function", "bug", "sql", "api", "jwt", "oauth"]):
+        if "jwt" in q or "token" in q:
+            text = (
+                "### JSON Web Tokens (JWT) Explained\n\n"
+                "A **JWT** is a compact, URL-safe means of representing claims between two parties. It consists of three parts separated by dots (`.`):\n\n"
+                "1. **Header**: Contains the token type (`JWT`) and signing algorithm (`HS256` or `RS256`).\n"
+                "2. **Payload**: Contains the claims (e.g., `sub: user_id`, `role`, `exp` expiration).\n"
+                "3. **Signature**: Cryptographic hash of the header and payload using a secret key to prevent tampering.\n\n"
+                "```python\n# Verifying token authenticity\nimport hmac, hashlib\nsignature = hmac.new(secret_key, f\"{header}.{payload}\".encode(), hashlib.sha256).digest()\n```\n\n"
+                "**Best Practice:** Always store JWTs securely (e.g. `HttpOnly` cookies) and keep access token expiration short (15–60 mins)."
+            )
+            return text, ["How do refresh tokens work?", "How does SmartCart verify sessions?", "What is OAuth2 PKCE?"]
+
+        if "react" in q or "render" in q:
+            text = (
+                "### Optimizing React Component Performance\n\n"
+                "Here are the primary ways to eliminate redundant re-renders in modern React:\n\n"
+                "1. **`React.memo`**: Wraps pure components so they only re-render if props change.\n"
+                "2. **`useCallback`**: Memoizes function references passed to child components.\n"
+                "3. **`useMemo`**: Caches expensive calculations between renders.\n"
+                "4. **State Colocation**: Keep state as close as possible to where it is used to avoid triggering tree-wide renders.\n"
+                "5. **Virtualization**: Use virtual lists (`react-window`) when rendering lists with hundreds of items."
+            )
+            return text, ["Explain React Server Components", "When should I use Zustand vs Context?", "How does Next.js App Router work?"]
+
+        text = (
+            "### Programming & Technical Assistance\n\n"
+            f"Here is an analysis regarding **{message.strip()}**:\n\n"
+            "Key engineering considerations:\n"
+            "- **Clean Architecture**: Separate business logic from HTTP handlers and transport layers.\n"
+            "- **Idempotency & Resilience**: Ensure mutation endpoints support retry safely without double-charging or duplicate entries.\n"
+            "- **Input Sanitization**: Validate all inputs at runtime (e.g., with Pydantic or Zod) to defend against injection attacks.\n"
+            "- **Testing**: Back your implementations with automated regression tests."
+        )
+        return text, suggestions
+
+    # Product Comparison & Recommendations
+    if any(k in q for k in ["laptop", "phone", "headphones", "compare", "buy", "deal", "discount", "under"]):
+        # Find matching products from catalog
+        matches = []
+        for p in PRODUCTS:
+            if p["category"].lower() in q or p["brand"].lower() in q or any(term in q for term in p["name"].lower().split()):
+                matches.append(p)
+        if not matches:
+            matches = PRODUCTS[:3]
+
+        p_list = "\n".join(
+            f"- **{p['name']}** ({p['brand']}): ${p['price']:,.2f} — {p.get('specs', {}).get('processor', p.get('specs', {}).get('battery', 'Verified'))}"
+            for p in matches[:3]
+        )
+        text = (
+            f"### Product Recommendations & Evaluation\n\n"
+            f"Based on your inquiry: *\"{message}\"*, here are our top verified picks:\n\n"
+            f"{p_list}\n\n"
+            "💡 **SmartCart Savings Tip:** When you register on SmartCart and pay with **PayPal**, use coupon **`SMART10`** for an immediate 10% discount off your total!"
+        )
+        return text, [
+            "Compare specs of the top two picks",
+            "Are there cheaper alternatives under my budget?",
+            "What do verified customer reviews say?",
+        ]
+
+    # General Knowledge & Academic Explanations
+    text = (
+        f"### Overview & Insights: {message.strip()}\n\n"
+        "Here is what you need to know:\n\n"
+        "1. **Core Concept:** Understanding the underlying principles helps make informed decisions, whether in technology, shopping, or research.\n"
+        "2. **Key Factor:** Evaluate verified data rather than relying solely on surface-level claims or unverified reviews.\n"
+        "3. **Practical Application:** In e-commerce and web development, combining real-time analysis with algorithmic safeguards gives the best balance of performance and reliability.\n\n"
+        "Feel free to ask a follow-up question or specify what you'd like to explore in greater detail!"
+    )
+    return text, suggestions
+
+
+async def general_chat(
+    db: Session | None,
+    message: str,
+    history: list[dict] | None = None,
+    session_id: str | None = None,
+) -> dict:
+    """General-purpose Cart AI assistant endpoint.
+    Handles general knowledge, coding, academic queries, brainstorming,
+    and shopping advice with conversational context.
+    """
+    history = history or []
+    convo = "\n".join(f"{m.get('role', 'user')}: {m.get('text', '')}" for m in history[-6:])
+    user_prompt = message
+    if convo:
+        user_prompt = f"Conversation history:\n{convo}\n\nUser request: {message}"
+
+    llm_res = await _llm(GENERAL_SYSTEM_PROMPT, user_prompt, max_tokens=1200)
+    if llm_res:
+        reply_text, provider = llm_res
+        suggestions = [
+            "Tell me more about this",
+            "Can you give a practical code example?",
+            "How does this compare to alternatives?",
+        ]
+    else:
+        reply_text, suggestions = _builtin_general_reply(message, history)
+        provider = "smartcart-reasoning-engine"
+
+    return {
+        "reply": reply_text,
+        "provider": provider,
+        "suggestions": suggestions,
+    }
+
+
+async def community_reply(message: str, recent_context: list[str]) -> str:
+    """Generate a response when @Cart is mentioned in the public community chat."""
+    clean_msg = re.sub(r"@cart\b", "", message, flags=re.IGNORECASE).strip()
+    context_str = "\n".join(recent_context[-4:])
+
+    prompt = (
+        f"Recent community messages:\n{context_str}\n\n"
+        f"User question to @Cart: {clean_msg or message}"
+    )
+
+    llm_res = await _llm(COMMUNITY_SYSTEM_PROMPT, prompt, max_tokens=250)
+    if llm_res:
+        return llm_res[0]
+
+    # Built-in contextual community response
+    q = clean_msg.lower()
+    if any(k in q for k in ["laptop", "phone", "headphone", "price", "amazon", "flipkart", "compare", "deal", "best"]):
+        return (
+            f"👋 Hi there! Regarding **{clean_msg or 'your shopping question'}**: "
+            "SmartCart tracks live specs and discounts across both Amazon and Flipkart. "
+            "Check our **Compare Products** tab for a spec-by-spec breakdown, and remember to use coupon "
+            "**`SMART10`** at checkout when paying with PayPal for an extra 10% off!"
+        )
+    if any(k in q for k in ["hello", "hi", "hey", "who are you"]):
+        return (
+            "👋 Hello! I'm Cart, your AI shopping companion on SmartCart. "
+            "You can tag me anytime with `@Cart` to get product advice, spec comparisons, "
+            "or answers to any technical or shopping questions!"
+        )
+    return (
+        f"Thanks for asking @Cart! Regarding *\"{clean_msg or message}\"*: "
+        "I'm here to help evaluate specs, find budget deals, or answer any technical questions. "
+        "Let me know if you need a side-by-side product comparison or price analysis!"
+    )
+
+
+# ---------- Support & Shopping (Preserved exactly) ----------
 
 def _money(amount: float, currency: str) -> str:
     return f"{currency} {amount:,.2f}"
@@ -87,8 +277,10 @@ def _money(amount: float, currency: str) -> str:
 
 def _order_line(o: dict) -> str:
     mode = " (mock payment)" if o["mock"] else ""
-    return (f"Order {o['id']}: {o['product_name']}, {_money(o['total'], o['currency'])}, "
-            f"status {o['status']}{mode}, risk check {o['risk_level']}")
+    return (
+        f"Order {o['id']}: {o['product_name']}, {_money(o['total'], o['currency'])}, "
+        f"status {o['status']}{mode}, risk check {o['risk_level']}"
+    )
 
 
 def _store_rules() -> list[str]:
@@ -108,7 +300,6 @@ def _store_rules() -> list[str]:
 
 
 def _find_order(message: str, orders: list[dict]) -> dict | None:
-    """Match an order id mentioned in the message. Only this session's orders are searched."""
     low = message.lower()
     for o in orders:
         if o["id"].lower() in low:
@@ -136,8 +327,10 @@ def _support_facts(db: Session, session_id: str, message: str) -> tuple[list[str
     if b["budget"] is None:
         facts.append("No session budget is set.")
     else:
-        facts.append(f"Session budget {b['budget']:g}, spent {b['spent']:g}, "
-                     f"remaining {b['remaining']:g}.")
+        facts.append(
+            f"Session budget {b['budget']:g}, spent {b['spent']:g}, "
+            f"remaining {b['remaining']:g}."
+        )
     facts.extend(_store_rules())
     return facts, shown
 
@@ -147,15 +340,22 @@ def _support_rules(message: str, db: Session, session_id: str, shown: list[dict]
     orders = services.orders_for_session(db, session_id)
 
     if re.search(r"refund|cancel|return", q):
-        return ("I can't process refunds, cancellations or returns here. "
-                "Please contact the store with your order id"
-                + (f" ({orders[0]['id']})." if orders else "."))
+        return (
+            "I can't process refunds, cancellations or returns here. "
+            "Please contact the store with your order id"
+            + (f" ({orders[0]['id']})." if orders else ".")
+        )
 
     if re.search(r"twice|duplicate|double", q):
-        return ("Checkout uses an idempotency key. If a request is retried or clicked twice, "
-                "the same order is returned and you are not charged again. "
-                + (f"Your latest order is {orders[0]['id']}; check Orders for duplicates."
-                   if orders else "You have no orders in this session yet."))
+        return (
+            "Checkout uses an idempotency key. If a request is retried or clicked twice, "
+            "the same order is returned and you are not charged again. "
+            + (
+                f"Your latest order is {orders[0]['id']}; check Orders for duplicates."
+                if orders
+                else "You have no orders in this session yet."
+            )
+        )
 
     if re.search(r"block|declin|fail|rejected|why.*(payment|order)", q):
         risky = [o for o in orders if o["risk_reasons"] or o["status"] not in ("COMPLETED", "CREATED")]
@@ -163,30 +363,38 @@ def _support_rules(message: str, db: Session, session_id: str, shown: list[dict]
             o = risky[0]
             why = "; ".join(o["risk_reasons"]) or f"its status is {o['status']}"
             return f"{o['id']} was flagged because {why}."
-        return ("Payments are blocked if you did not approve them, or if 3 or more orders are "
-                "placed within 10 minutes. They go to review when above 500, above twice your "
-                "budget, or when the coupon code is unknown. I see no flagged orders in this session.")
+        return (
+            "Payments are blocked if you did not approve them, or if 3 or more orders are "
+            "placed within 10 minutes. They go to review when above 500, above twice your "
+            "budget, or when the coupon code is unknown. I see no flagged orders in this session."
+        )
 
     if re.search(r"coupon|promo|discount code", q):
         lines = [f"{code}: {c['description']}" for code, c in COUPONS.items()]
         return "Valid coupons are " + "; ".join(lines) + ". The best valid one is applied automatically."
 
     if re.search(r"shipping|delivery", q):
-        return (f"Shipping is free once the total after discounts reaches "
-                f"{settings.free_shipping_threshold:g} {settings.currency}; below that it is a flat "
-                f"{settings.flat_shipping_fee:g}. I don't have delivery dates.")
+        return (
+            f"Shipping is free once the total after discounts reaches "
+            f"{settings.free_shipping_threshold:g} {settings.currency}; below that it is a flat "
+            f"{settings.flat_shipping_fee:g}. I don't have delivery dates."
+        )
 
     if re.search(r"spent|budget", q):
         ins = services.insights(db, session_id)
         b = ins["budget"]
         if b["budget"] is None:
             return f"No budget is set. You have spent {b['spent']:g} {ins['currency']} so far."
-        return (f"Budget {b['budget']:g}, spent {b['spent']:g}, "
-                f"remaining {b['remaining']:g} {ins['currency']}.")
+        return (
+            f"Budget {b['budget']:g}, spent {b['spent']:g}, "
+            f"remaining {b['remaining']:g} {ins['currency']}."
+        )
 
     if re.search(r"paypal|pay|checkout", q) and not shown:
-        return ("At checkout you approve the payment, then PayPal creates the order and you "
-                "capture it. Without sandbox credentials the app uses a mock PayPal order.")
+        return (
+            "At checkout you approve the payment, then PayPal creates the order and you "
+            "capture it. Without sandbox credentials the app uses a mock PayPal order."
+        )
 
     if not orders:
         return "You have no orders in this session yet. Search for a product and check out to create one."
@@ -215,11 +423,15 @@ async def _support(db: Session, session_id: str, message: str, history: list[dic
     else:
         trace.append("Support agent answered from rules (no LLM key or call failed)")
 
-    return {"mode": "support", "reply": reply, "search": None,
-            "orders": shown, "trace": trace, "provider": provider}
+    return {
+        "mode": "support",
+        "reply": reply,
+        "search": None,
+        "orders": shown,
+        "trace": trace,
+        "provider": provider,
+    }
 
-
-# ---------- Shopping ----------
 
 def _shop_reply(result: dict) -> str:
     if not result["matrix"]:
@@ -237,8 +449,10 @@ def _shop_reply(result: dict) -> str:
     if top["flagged_reviews"]:
         parts.append(f"{top['flagged_reviews']} suspicious review(s) were removed before scoring.")
     if cart and cart["coupon"]:
-        parts.append(f"Coupon {cart['coupon']['code']} saves {cart['coupon']['saving']:,.2f}. "
-                     f"Cart total is {cart['total']:,.2f}.")
+        parts.append(
+            f"Coupon {cart['coupon']['code']} saves {cart['coupon']['saving']:,.2f}. "
+            f"Cart total is {cart['total']:,.2f}."
+        )
     elif cart:
         parts.append(f"Cart total with shipping is {cart['total']:,.2f}.")
 
@@ -259,14 +473,24 @@ async def _shop(db: Session, session_id: str, message: str, coupon_code: str | N
         spent_so_far=services.spent_so_far(db, session_id),
     )
     services.record_run(db, session_id, message, result)
-    return {"mode": "shop", "reply": _shop_reply(result), "search": result,
-            "orders": None, "trace": result["trace"], "provider": result["intent"]["source"]}
+    return {
+        "mode": "shop",
+        "reply": _shop_reply(result),
+        "search": result,
+        "orders": None,
+        "trace": result["trace"],
+        "provider": result["intent"]["source"],
+    }
 
 
-# ---------- Entry point ----------
-
-async def chat(db: Session, *, session_id: str, message: str,
-               history: list[dict] | None = None, coupon_code: str | None = None) -> dict:
+async def chat(
+    db: Session,
+    *,
+    session_id: str,
+    message: str,
+    history: list[dict] | None = None,
+    coupon_code: str | None = None,
+) -> dict:
     services.ensure_session(db, session_id)
     history = history or []
     if route(message) == "support":

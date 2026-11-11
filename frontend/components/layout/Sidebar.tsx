@@ -18,6 +18,8 @@ import {
   LogOut,
   X,
   ExternalLink,
+  MapPin,
+  MessageSquare,
 } from "lucide-react";
 import { useSmartCart } from "@/context/SmartCartContext";
 
@@ -47,6 +49,22 @@ export default function Sidebar() {
       active: pathname === "/assistant",
       badge: "CART",
       badgeColor: "bg-indigo-100 text-indigo-700",
+    },
+    {
+      label: "Community Chat",
+      href: "/community",
+      icon: MessageSquare,
+      active: pathname === "/community",
+      badge: "LIVE",
+      badgeColor: "bg-emerald-100 text-emerald-700",
+    },
+    {
+      label: "Nearby Stores",
+      href: "/stores",
+      icon: MapPin,
+      active: pathname === "/stores",
+      badge: "MAP",
+      badgeColor: "bg-blue-100 text-blue-700",
     },
     {
       label: "Compare Products",

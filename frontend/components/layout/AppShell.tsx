@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import Footer from "./Footer";
 import SearchModal from "./SearchModal";
+import RatingModal from "@/components/RatingModal";
 import ToastContainer from "@/components/ui/ToastContainer";
 import { useSmartCart } from "@/context/SmartCartContext";
 
@@ -60,6 +61,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Global Modals & Toasts */}
       <SearchModal />
+      <RatingModal />
       <ToastContainer />
     </div>
   );

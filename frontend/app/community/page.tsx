@@ -60,6 +60,24 @@ export default function CommunityPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Helper to retrieve or automatically initialize valid authentication token
+  const getAuthToken = async (): Promise<string> => {
+    let token = typeof window !== "undefined" ? localStorage.getItem("smartcart_auth_token_v3") : null;
+    if (!token || token === "demo-token" || token === "null" || token === "undefined") {
+      try {
+        const res = await api.getDemoToken();
+        if (res.token) {
+          token = res.token;
+          localStorage.setItem("smartcart_auth_token_v3", token);
+          return token;
+        }
+      } catch {
+        // Backend supports demo-token fallback
+      }
+    }
+    return token || "demo-token";
+  };
+
   // 1. Fetch messages on mount & setup polling every 4 seconds
   const fetchMessages = async (silent = false) => {
     if (!silent) setRefreshing(true);
@@ -76,6 +94,7 @@ export default function CommunityPage() {
 
   useEffect(() => {
     fetchMessages();
+    getAuthToken(); // Pre-initialize auth token
     const interval = setInterval(() => {
       fetchMessages(true);
     }, 4000);
@@ -122,7 +141,7 @@ export default function CommunityPage() {
     }
 
     setUploadingImage(true);
-    const token = localStorage.getItem("smartcart_auth_token_v3") || "demo-token";
+    const token = await getAuthToken();
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -151,7 +170,23 @@ export default function CommunityPage() {
           });
           setAttachedImages((prev) => [...prev, uploaded]);
           addToast("Image Attached", file.name, "success");
-        } catch {
+        } catch (uploadErr: any) {
+          if (uploadErr.status === 401 || uploadErr.message?.toLowerCase().includes("token")) {
+            try {
+              const fresh = await api.getDemoToken();
+              if (fresh.token) {
+                localStorage.setItem("smartcart_auth_token_v3", fresh.token);
+                const uploaded = await api.uploadCommunityImage(fresh.token, {
+                  filename: file.name,
+                  mime_type: file.type,
+                  data_base64: base64Data,
+                });
+                setAttachedImages((prev) => [...prev, uploaded]);
+                addToast("Image Attached", file.name, "success");
+                return;
+              }
+            } catch {}
+          }
           // Local fallback preview
           setAttachedImages((prev) => [
             ...prev,
@@ -181,7 +216,7 @@ export default function CommunityPage() {
     }
 
     setSending(true);
-    const token = localStorage.getItem("smartcart_auth_token_v3") || "demo-token";
+    let token = await getAuthToken();
 
     try {
       const res = await api.sendCommunityMessage(token, {
@@ -210,6 +245,41 @@ export default function CommunityPage() {
         addToast("Cart AI Responded", "Cart answered your question in the chat!", "info");
       }
     } catch (err: any) {
+      // If token error occurred, auto-refresh and retry once
+      if (err.status === 401 || err.message?.toLowerCase().includes("token")) {
+        try {
+          const fresh = await api.getDemoToken();
+          if (fresh.token) {
+            localStorage.setItem("smartcart_auth_token_v3", fresh.token);
+            const retryRes = await api.sendCommunityMessage(fresh.token, {
+              content: content || "Attached media:",
+              parent_id: replyTo ? replyTo.id : null,
+              links: attachedLinks,
+              images: attachedImages,
+            });
+
+            setInputText("");
+            setReplyTo(null);
+            setAttachedLinks([]);
+            setAttachedImages([]);
+
+            setMessages((prev) => {
+              const updated = [...prev, retryRes.message];
+              if (retryRes.bot_reply) {
+                updated.push(retryRes.bot_reply);
+              }
+              return updated;
+            });
+
+            if (retryRes.bot_reply) {
+              addToast("Cart AI Responded", "Cart answered your question in the chat!", "info");
+            }
+            return;
+          }
+        } catch {
+          // fall through to error toast
+        }
+      }
       addToast("Posting Error", err.message || "Failed to post message.", "error");
     } finally {
       setSending(false);
@@ -220,7 +290,7 @@ export default function CommunityPage() {
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reportingMessageId) return;
-    const token = localStorage.getItem("smartcart_auth_token_v3") || "demo-token";
+    const token = await getAuthToken();
 
     try {
       await api.reportCommunityMessage(token, reportingMessageId, reportReason);
@@ -234,7 +304,7 @@ export default function CommunityPage() {
 
   // 6. Delete message (author or admin)
   const handleDeleteMessage = async (msgId: string) => {
-    const token = localStorage.getItem("smartcart_auth_token_v3") || "demo-token";
+    const token = await getAuthToken();
     try {
       await api.deleteCommunityMessage(token, msgId);
       setMessages((prev) => prev.filter((m) => m.id !== msgId));

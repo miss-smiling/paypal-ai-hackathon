@@ -88,7 +88,7 @@ def create_jwt_token(payload: dict[str, Any], expires_delta: timedelta | None = 
     body = payload.copy()
     now = datetime.now(timezone.utc)
     if expires_delta is None:
-        expires_delta = timedelta(days=7)
+        expires_delta = timedelta(days=30)
     body["iat"] = int(now.timestamp())
     body["exp"] = int((now + expires_delta).timestamp())
 
@@ -102,7 +102,8 @@ def create_jwt_token(payload: dict[str, Any], expires_delta: timedelta | None = 
 
 
 def decode_jwt_token(token: str) -> dict[str, Any]:
-    parts = token.strip().split(".")
+    cleaned = token.strip().strip("\"'")
+    parts = cleaned.split(".")
     if len(parts) != 3:
         raise ValueError("Invalid token format")
     header_enc, payload_enc, sig_enc = parts
@@ -115,6 +116,7 @@ def decode_jwt_token(token: str) -> dict[str, Any]:
 
     payload = json.loads(_b64url_decode(payload_enc).decode("utf-8"))
     exp = payload.get("exp")
-    if exp and datetime.now(timezone.utc).timestamp() > exp:
+    # Allow 300 seconds (5 min) leeway for client clock skew
+    if exp and (datetime.now(timezone.utc).timestamp() - 300) > exp:
         raise ValueError("Token has expired")
     return payload

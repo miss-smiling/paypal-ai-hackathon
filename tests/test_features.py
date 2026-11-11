@@ -129,6 +129,21 @@ def test_genuine_ratings_and_footer_stats():
 
 
 def test_community_messages_and_cart_mention():
+    # 0. Test demo token endpoint and posting with demo-token
+    demo_res = client.get("/api/auth/demo-token")
+    assert demo_res.status_code == 200
+    demo_jwt = demo_res.json()["token"]
+    assert len(demo_jwt.split(".")) == 3
+
+    # Post using demo-token header alias
+    demo_post_res = client.post(
+        "/api/community/messages",
+        json={"content": "Testing community message with demo-token alias"},
+        headers={"Authorization": "Bearer demo-token"},
+    )
+    assert demo_post_res.status_code == 200
+    assert demo_post_res.json()["message"]["content"] == "Testing community message with demo-token alias"
+
     with SessionLocal() as db:
         user = db.query(User).filter_by(email="sujit.krishna@smartcart.ai").first()
         token = create_jwt_token({"sub": user.id, "email": user.email, "role": user.role, "name": user.full_name})

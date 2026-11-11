@@ -247,6 +247,9 @@ export const api = {
       headers: { Authorization: `Bearer ${token}` },
     }),
 
+  getDemoToken: () =>
+    request<{ status: string; token: string; user: any }>("/api/auth/demo-token"),
+
   // Public Community Chat
   getCommunityMessages: (limit = 50, beforeId?: string) => {
     const params = new URLSearchParams({ limit: String(limit) });

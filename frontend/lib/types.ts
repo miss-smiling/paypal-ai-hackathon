@@ -80,3 +80,14 @@ export type Insights = {
   searches: number;
   currency: string;
 };
+
+export type ChatTurn = { role: "user" | "assistant"; text: string };
+
+export type ChatResult = {
+  mode: "shop" | "support";
+  reply: string;
+  search: SearchResult | null;
+  orders: Order[] | null;
+  trace: string[];
+  provider: string;
+};

@@ -1,4 +1,4 @@
-import type { CreatedOrder, Insights, Order, SearchResult } from "./types";
+import type { ChatResult, ChatTurn, CreatedOrder, Insights, Order, SearchResult } from "./types";
 
 const BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
@@ -34,6 +34,12 @@ export const api = {
     request<SearchResult>("/api/search", {
       method: "POST",
       body: JSON.stringify({ session_id: sessionId, query, coupon_code: couponCode }),
+    }),
+
+  chat: (sessionId: string, message: string, history: ChatTurn[] = [], couponCode: string | null = null) =>
+    request<ChatResult>("/api/assistant/chat", {
+      method: "POST",
+      body: JSON.stringify({ session_id: sessionId, message, history, coupon_code: couponCode }),
     }),
 
   setBudget: (sessionId: string, budget: number | null) =>

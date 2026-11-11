@@ -31,6 +31,7 @@ import { api } from "@/lib/api";
 import { getSessionId } from "@/lib/session";
 import { ChatMessage, SavedConversation, ChatProductCard } from "@/lib/types";
 import { formatINR, MOCK_SAVED_CONVERSATIONS } from "@/lib/mockData";
+import { FormattedMarkdown } from "@/components/FormattedMarkdown";
 
 export default function AssistantPage() {
   const { addToCompare, isComparing, addToast } = useSmartCart();
@@ -345,7 +346,11 @@ export default function AssistantPage() {
                         : "bg-white border border-slate-200/80 text-slate-800 rounded-tl-xs shadow-xs"
                     }`}
                   >
-                    <div className="whitespace-pre-wrap font-sans">{msg.text}</div>
+                    {msg.sender === "user" ? (
+                      <div className="whitespace-pre-wrap font-sans">{msg.text}</div>
+                    ) : (
+                      <FormattedMarkdown content={msg.text} />
+                    )}
                   </div>
 
                   {/* Rich Product Cards Grid if returned by CART */}

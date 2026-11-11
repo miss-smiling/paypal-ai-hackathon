@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { api, CommunityMessage } from "@/lib/api";
 import { useSmartCart } from "@/context/SmartCartContext";
+import { FormattedMarkdown } from "@/components/FormattedMarkdown";
 
 const MAX_CHARS = 2000;
 const MAX_IMAGES = 3;
@@ -472,9 +473,15 @@ export default function CommunityPage() {
                     )}
 
                     {/* Content Text */}
-                    <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap select-text">
-                      {msg.content}
-                    </div>
+                    {isCartBot ? (
+                      <div className="select-text pt-0.5">
+                        <FormattedMarkdown content={msg.content} />
+                      </div>
+                    ) : (
+                      <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap select-text">
+                        {msg.content}
+                      </div>
+                    )}
 
                     {/* Attached Links Preview */}
                     {msg.links && msg.links.length > 0 && (

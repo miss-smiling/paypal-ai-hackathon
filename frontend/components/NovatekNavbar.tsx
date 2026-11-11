@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Search, ShoppingBag, Heart, SlidersHorizontal, Sparkles, Menu, X, ArrowRight, Globe, ChevronDown } from "lucide-react";
 import { useNovatek } from "@/context/NovatekContext";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function NovatekNavbar() {
   const pathname = usePathname();
@@ -179,6 +180,8 @@ export default function NovatekNavbar() {
 
         {/* Right: Actions matching the top-right of sample */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+
           {/* Search Button */}
           <button
             onClick={() => setIsSearchOpen(true)}

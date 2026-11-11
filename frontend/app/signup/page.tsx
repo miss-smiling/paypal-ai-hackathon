@@ -3,92 +3,131 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Sparkles, ArrowRight, ShieldCheck, Lock, Mail, User } from "lucide-react";
+import { useSmartCart } from "@/context/SmartCartContext";
 
-export default function SignUpPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function SignupPage() {
   const router = useRouter();
+  const { addToast } = useSmartCart();
+  const [name, setName] = useState("Sujit Krishna");
+  const [email, setEmail] = useState("sujit.krishna@smartcart.ai");
+  const [password, setPassword] = useState("••••••••••••");
+  const [confirmPassword, setConfirmPassword] = useState("••••••••••••");
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleSignUp(e: React.FormEvent) {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/");
-  }
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      addToast("Account Created", "Let's set up your shopping preferences.", "success");
+      router.push("/onboarding");
+    }, 600);
+  };
 
   return (
-    <div className="mx-auto max-w-md px-4 py-16 space-y-6">
-      <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-8 shadow-2xl backdrop-blur-xl space-y-6">
-        <div className="text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-cyan-600 to-indigo-600 p-2 shadow-lg shadow-cyan-500/20 mb-3">
-            <span className="text-xl">✨</span>
+    <div className="w-full max-w-md mx-auto p-6 sm:p-8 animate-fade-in">
+      <div className="saas-card p-8 space-y-6 shadow-xl border border-slate-200">
+        {/* Brand */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20 mb-1">
+            <Sparkles className="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-black text-white">Create Account</h1>
-          <p className="mt-1 text-xs text-slate-400">
-            Join SmartCart AI for verified deals and automated cart optimization.
+          <h1 className="text-2xl font-black text-slate-900">
+            Create Your Account
+          </h1>
+          <p className="text-xs text-slate-500">
+            Join SmartCart AI to compare products, track price drops & plan budgets
           </p>
         </div>
 
-        <form onSubmit={handleSignUp} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="text-xs font-bold text-slate-300 block mb-1">Full Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Sujit Krishna"
-              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
-            />
+            <label className="block font-semibold text-slate-700 mb-1">
+              Full Name
+            </label>
+            <div className="relative">
+              <User className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-300 block mb-1">Email Address</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="shopper@example.com"
-              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
-            />
+            <label className="block font-semibold text-slate-700 mb-1">
+              Email Address
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-300 block mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
-            />
+            <label className="block font-semibold text-slate-700 mb-1">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1">
+              Confirm Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+              <input
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 px-6 py-3 font-bold text-xs text-white shadow-lg shadow-cyan-500/20 hover:opacity-95"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm py-3 px-4 shadow-sm transition-all hover:scale-[1.01]"
           >
-            Create Free Account
+            {isLoading ? (
+              <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <span>Continue to Onboarding</span>
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
           </button>
         </form>
 
-        <div className="relative flex py-2 items-center">
-          <div className="flex-grow border-t border-slate-800"></div>
-          <span className="flex-shrink mx-4 text-xs text-slate-500 uppercase font-semibold">Or</span>
-          <div className="flex-grow border-t border-slate-800"></div>
-        </div>
-
-        <Link
-          href="/"
-          className="w-full flex items-center justify-center gap-2 rounded-2xl bg-slate-800 hover:bg-slate-700 px-6 py-3 font-bold text-xs text-slate-200 transition-all border border-slate-700"
-        >
-          <span>Continue as Guest / Judge Tester &rarr;</span>
-        </Link>
-
-        <p className="text-center text-xs text-slate-500">
+        <div className="text-center text-xs text-slate-500 pt-2 border-t border-slate-100">
           Already have an account?{" "}
-          <Link href="/login" className="font-bold text-cyan-400 hover:underline">
-            Sign in
+          <Link href="/login" className="font-bold text-indigo-600 hover:underline">
+            Sign In
           </Link>
-        </p>
+        </div>
       </div>
     </div>
   );

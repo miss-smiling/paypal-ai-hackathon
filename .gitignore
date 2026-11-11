@@ -16,3 +16,4 @@ frontend/out/
 
 # Local frontend env
 frontend/.env.local
+*.tsbuildinfo

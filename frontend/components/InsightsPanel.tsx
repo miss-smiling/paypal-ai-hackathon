@@ -117,7 +117,7 @@ export default function InsightsPanel({
             {categories.map(([cat, amount]) => (
               <div key={cat} className="flex justify-between text-xs">
                 <span className="text-slate-400 capitalize">{cat}</span>
-                <span className="text-cyan-300 font-bold">{money(amount, currency)}</span>
+                <span className="text-cyan-300 font-bold">{money(amount as number, currency)}</span>
               </div>
             ))}
           </div>

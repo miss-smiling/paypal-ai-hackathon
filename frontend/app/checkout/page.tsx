@@ -1,31 +1,32 @@
 "use client";
 
-import Link from "next/link";
-import { useNovatek } from "@/context/NovatekContext";
-import { SMARTCART_PRODUCTS } from "@/lib/smartcartData";
-import { ShieldCheck, ArrowRight, Lock, CheckCircle2, Check, Clock } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
+import {
+  Lock,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  Clock,
+  ShoppingBag,
+  CreditCard,
+} from "lucide-react";
+import { useSmartCart } from "@/context/SmartCartContext";
+import { productService } from "@/lib/services";
+import { formatINR } from "@/lib/mockData";
 
 export default function CheckoutPage() {
-  const { cart, subtotal, discount, shipping, total, clearCart, addToast } = useNovatek();
+  const { addToast } = useSmartCart();
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [selectedMethod, setSelectedMethod] = useState<"paypal" | "card" | "applepay" | "cod">("paypal");
+  const [selectedMethod, setSelectedMethod] = useState<"paypal" | "card" | "upi">("paypal");
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
 
-  const checkoutItems =
-    cart.length > 0
-      ? cart
-      : [
-          { product: SMARTCART_PRODUCTS[0], quantity: 1 },
-          { product: SMARTCART_PRODUCTS[1], quantity: 1 },
-          { product: SMARTCART_PRODUCTS[SMARTCART_PRODUCTS.length - 1], quantity: 1 },
-        ];
-
-  const effectiveSubtotal = cart.length > 0 ? subtotal : 2447;
-  const effectiveDiscount = cart.length > 0 ? discount : 0;
-  const effectiveShipping = cart.length > 0 ? shipping : 0;
-  const effectiveTotal = effectiveSubtotal - effectiveDiscount + effectiveShipping;
+  const sampleProducts = productService.getAll().slice(0, 2);
+  const subtotal = sampleProducts.reduce((sum, p) => sum + p.price, 0);
+  const discount = 3000;
+  const shipping = 0;
+  const total = subtotal - discount + shipping;
 
   const handleProceedToPayment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,137 +36,123 @@ export default function CheckoutPage() {
   const handleConfirmPayment = () => {
     setIsProcessing(true);
     setTimeout(() => {
-      const generatedId = `TN${Math.floor(100000 + Math.random() * 900000)}`;
+      const generatedId = `SC-${Math.floor(100000 + Math.random() * 900000)}`;
       setOrderId(generatedId);
       setIsProcessing(false);
       setStep(3);
-      clearCart();
       addToast("Order Placed Successfully!", `SmartCart Order #${generatedId} confirmed.`, "success");
-    }, 1600);
+    }, 1200);
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8 space-y-8">
-      
-      {/* Header & Steps Indicator matching sample mobile screen */}
-      <div className="rounded-3xl border border-slate-800 bg-[#0d1226]/90 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+    <div className="mx-auto max-w-5xl space-y-8 animate-fade-in">
+      {/* Header & Steps Indicator */}
+      <div className="saas-card p-6 sm:p-8 space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1">
-              <Lock className="h-3.5 w-3.5" />
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1">
+              <Lock className="h-3.5 w-3.5 text-indigo-600" />
               <span>SmartCart Express Checkout</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900">
               {step === 1 ? "Shipping Details" : step === 2 ? "Payment Method" : "Order Confirmation"}
             </h1>
           </div>
 
-          {/* Stepper (1 Shipping · 2 Payment · 3 Confirmation) */}
+          {/* Stepper */}
           <div className="flex items-center gap-2 text-xs">
             <span
               className={`flex items-center gap-1.5 rounded-full px-3 py-1 font-bold ${
-                step >= 1 ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-400"
+                step >= 1 ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-400"
               }`}
             >
               <span>1</span> Shipping
             </span>
-            <span className="text-slate-600">→</span>
+            <span className="text-slate-300">→</span>
             <span
               className={`flex items-center gap-1.5 rounded-full px-3 py-1 font-bold ${
-                step >= 2 ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-400"
+                step >= 2 ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-400"
               }`}
             >
               <span>2</span> Payment
             </span>
-            <span className="text-slate-600">→</span>
+            <span className="text-slate-300">→</span>
             <span
               className={`flex items-center gap-1.5 rounded-full px-3 py-1 font-bold ${
-                step === 3 ? "bg-emerald-600 text-white" : "bg-slate-800 text-slate-400"
+                step === 3 ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-400"
               }`}
             >
-              <span>3</span> Confirmation
+              <span>3</span> Confirmed
             </span>
           </div>
         </div>
       </div>
 
       {step === 3 ? (
-        /* Step 3: Order Placed Successfully + Tracking Stepper matching sample */
         <div className="grid gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-7 rounded-3xl border border-emerald-500/40 bg-[#09151f]/90 p-8 text-center space-y-4">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-600/20 border border-blue-500/40 text-cyan-300 animate-pulse">
-              <CheckCircle2 className="h-10 w-10 text-cyan-400" />
+          <div className="lg:col-span-7 saas-card p-8 text-center space-y-4 border-emerald-200 bg-emerald-50/20">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+              <CheckCircle2 className="h-10 w-10" />
             </div>
 
-            <h2 className="text-2xl font-black text-white">Order Placed Successfully!</h2>
-            <p className="text-xs text-slate-300 max-w-md mx-auto">
-              Thank you for your order. Your tracking identifier is:
+            <h2 className="text-2xl font-black text-slate-900">Order Placed Successfully!</h2>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              Your transaction has been approved and logged against your shopping budget.
             </p>
-            <div className="inline-block rounded-xl border border-cyan-500/30 bg-[#060810] px-5 py-2 font-mono text-sm font-bold text-cyan-300">
-              #{orderId}
+            <div className="inline-block rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-2 font-mono text-sm font-bold text-indigo-700">
+              Tracking #{orderId}
             </div>
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 href="/orders"
-                className="rounded-xl bg-blue-600 px-6 py-3 text-xs font-bold text-white hover:bg-blue-500"
+                className="rounded-xl bg-indigo-600 px-6 py-3 text-xs font-bold text-white hover:bg-indigo-700"
               >
                 View Order Details
               </Link>
               <Link
-                href="/"
-                className="rounded-xl border border-slate-700 bg-slate-800 px-6 py-3 text-xs font-semibold text-slate-300 hover:text-white"
+                href="/dashboard"
+                className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
               >
-                Continue Shopping
+                Return to Dashboard
               </Link>
             </div>
           </div>
 
-          {/* Track Your Order Stepper (matching right-most phone screen in sample) */}
-          <div className="lg:col-span-5 rounded-3xl border border-slate-800 bg-[#0d1226]/90 p-6 space-y-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Clock className="h-4 w-4 text-cyan-400" />
-              <span>Track Your Order (#{orderId})</span>
+          <div className="lg:col-span-5 saas-card p-6 space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Clock className="h-4 w-4 text-indigo-600" />
+              <span>Fulfillment Status</span>
             </h3>
 
             <div className="space-y-4 text-xs pt-2">
               <div className="flex items-start gap-3">
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-400 text-slate-950 font-bold text-[10px]">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-[10px]">
                   ✓
                 </div>
                 <div>
-                  <p className="font-bold text-white">Order Placed</p>
-                  <p className="text-[10px] text-slate-400">Verified and approved</p>
+                  <p className="font-bold text-slate-900">Order Confirmed</p>
+                  <p className="text-[11px] text-slate-400">Payment processed via PayPal Sandbox</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-400 text-slate-950 font-bold text-[10px]">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-[10px]">
                   ✓
                 </div>
                 <div>
-                  <p className="font-bold text-white">Processing</p>
-                  <p className="text-[10px] text-slate-400">Allocated in SmartCart fulfillment center</p>
+                  <p className="font-bold text-slate-900">Budget Earmarked</p>
+                  <p className="text-[11px] text-slate-400">Deducted from Q4 Tech Budget</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-cyan-400/50 bg-cyan-950/40 text-cyan-300 text-[10px]">
+              <div className="flex items-start gap-3 opacity-60">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 text-slate-400 text-[10px]">
                   •
                 </div>
                 <div>
-                  <p className="font-bold text-slate-300">Shipped</p>
-                  <p className="text-[10px] text-slate-500">Carrier dispatched with GPS tracking</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 opacity-50">
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-700 text-[10px]">
-                  •
-                </div>
-                <div>
-                  <p className="font-bold text-slate-400">Out for Delivery</p>
-                  <p className="text-[10px] text-slate-500">Expected in 2 business days</p>
+                  <p className="font-bold text-slate-600">Dispatched</p>
+                  <p className="text-[11px] text-slate-400">Expected delivery in 2 business days</p>
                 </div>
               </div>
             </div>
@@ -173,150 +160,116 @@ export default function CheckoutPage() {
         </div>
       ) : (
         <div className="grid gap-8 lg:grid-cols-12">
-          
-          {/* Left Form: Step 1 Shipping or Step 2 Payment */}
+          {/* Left Form: Shipping or Payment */}
           <div className="lg:col-span-7 space-y-6">
             {step === 1 ? (
-              /* Step 1: Shipping Address */
-              <form onSubmit={handleProceedToPayment} className="rounded-2xl border border-slate-800 bg-[#0d1226]/80 p-6 shadow-lg backdrop-blur-md space-y-4">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">
+              <form onSubmit={handleProceedToPayment} className="saas-card p-6 space-y-4">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
                   Shipping Address
                 </h2>
 
                 <div className="space-y-3 text-xs">
                   <div>
-                    <label className="block text-slate-400 mb-1">Full Name</label>
+                    <label className="block text-slate-600 mb-1 font-semibold">Full Name</label>
                     <input
                       type="text"
                       required
-                      defaultValue="Sarah Ahmed"
-                      className="w-full rounded-xl border border-slate-700 bg-[#07090e] p-3 text-white focus:border-cyan-400 focus:outline-none"
+                      defaultValue="Sujit Krishna"
+                      className="w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 mb-1">Address</label>
+                    <label className="block text-slate-600 mb-1 font-semibold">Address Line</label>
                     <input
                       type="text"
                       required
-                      defaultValue="12 Rue des Fleurs"
-                      className="w-full rounded-xl border border-slate-700 bg-[#07090e] p-3 text-white focus:border-cyan-400 focus:outline-none"
+                      defaultValue="42 Indiranagar 100ft Road"
+                      className="w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-slate-400 mb-1">City</label>
+                      <label className="block text-slate-600 mb-1 font-semibold">City</label>
                       <input
                         type="text"
                         required
-                        defaultValue="San Francisco"
-                        className="w-full rounded-xl border border-slate-700 bg-[#07090e] p-3 text-white focus:border-cyan-400 focus:outline-none"
+                        defaultValue="Bengaluru, Karnataka"
+                        className="w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-slate-400 mb-1">Postal Code</label>
+                      <label className="block text-slate-600 mb-1 font-semibold">PIN Code</label>
                       <input
                         type="text"
                         required
-                        defaultValue="94105"
-                        className="w-full rounded-xl border border-slate-700 bg-[#07090e] p-3 text-white focus:border-cyan-400 focus:outline-none"
+                        defaultValue="560038"
+                        className="w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                       />
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-400 mb-1">Phone Number</label>
-                    <input
-                      type="text"
-                      required
-                      defaultValue="+1 (555) 234-5678"
-                      className="w-full rounded-xl border border-slate-700 bg-[#07090e] p-3 text-white focus:border-cyan-400 focus:outline-none"
-                    />
                   </div>
                 </div>
 
                 <div className="pt-3">
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3.5 text-xs font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-500 transition-all hover:scale-[1.01]"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-xs font-bold text-white hover:bg-indigo-700 transition-colors"
                   >
-                    <span>Continue to Payment</span>
+                    <span>Proceed to Payment</span>
                     <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
               </form>
             ) : (
-              /* Step 2: Payment Method matching mobile screen */
-              <div className="rounded-2xl border border-slate-800 bg-[#0d1226]/80 p-6 shadow-lg backdrop-blur-md space-y-4">
+              <div className="saas-card p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">
-                    Payment Method
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+                    Payment Gateway
                   </h2>
                   <button
                     onClick={() => setStep(1)}
-                    className="text-xs text-cyan-400 hover:underline"
+                    className="text-xs text-indigo-600 hover:underline"
                   >
                     Edit Shipping
                   </button>
                 </div>
 
                 <div className="space-y-3">
-                  {/* PayPal */}
                   <div
                     onClick={() => setSelectedMethod("paypal")}
                     className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${
                       selectedMethod === "paypal"
-                        ? "border-cyan-400 bg-cyan-950/20 ring-1 ring-cyan-400"
-                        : "border-slate-800 bg-[#080b16]"
+                        ? "border-indigo-600 bg-indigo-50/50 ring-1 ring-indigo-600"
+                        : "border-slate-200 bg-white"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-xl">💳</span>
+                      <CreditCard className="h-5 w-5 text-indigo-600" />
                       <div>
-                        <p className="text-xs font-bold text-white">PayPal Sandbox</p>
-                        <p className="text-[10px] text-slate-400">Orders v2 REST · Buyer Protection</p>
+                        <p className="text-xs font-bold text-slate-900">PayPal Express Sandbox</p>
+                        <p className="text-[10px] text-slate-500">Orders v2 REST · Buyer Protection</p>
                       </div>
                     </div>
                     <span className="text-xs font-black text-[#0070ba]">PayPal</span>
                   </div>
 
-                  {/* Credit / Debit Card */}
                   <div
-                    onClick={() => setSelectedMethod("card")}
+                    onClick={() => setSelectedMethod("upi")}
                     className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${
-                      selectedMethod === "card"
-                        ? "border-cyan-400 bg-cyan-950/20 ring-1 ring-cyan-400"
-                        : "border-slate-800 bg-[#080b16]"
+                      selectedMethod === "upi"
+                        ? "border-indigo-600 bg-indigo-50/50 ring-1 ring-indigo-600"
+                        : "border-slate-200 bg-white"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-xl">💳</span>
+                      <CreditCard className="h-5 w-5 text-emerald-600" />
                       <div>
-                        <p className="text-xs font-bold text-white">Credit / Debit Card</p>
-                        <p className="text-[10px] text-slate-400">VISA · MasterCard · Amex</p>
+                        <p className="text-xs font-bold text-slate-900">Instant UPI / QR Code</p>
+                        <p className="text-[10px] text-slate-500">Google Pay, PhonePe, Paytm</p>
                       </div>
                     </div>
-                    <span className="text-xs font-semibold text-slate-400">Card</span>
-                  </div>
-
-                  {/* Apple Pay */}
-                  <div
-                    onClick={() => setSelectedMethod("applepay")}
-                    className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${
-                      selectedMethod === "applepay"
-                        ? "border-cyan-400 bg-cyan-950/20 ring-1 ring-cyan-400"
-                        : "border-slate-800 bg-[#080b16]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl"></span>
-                      <div>
-                        <p className="text-xs font-bold text-white">Apple Pay</p>
-                        <p className="text-[10px] text-slate-400">Touch ID & Face ID</p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-semibold text-white">Pay</span>
+                    <span className="text-xs font-bold text-emerald-600">UPI</span>
                   </div>
                 </div>
 
@@ -324,84 +277,77 @@ export default function CheckoutPage() {
                   <button
                     disabled={isProcessing}
                     onClick={handleConfirmPayment}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3.5 text-xs font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-500 transition-all disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-xs font-bold text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
                   >
                     {isProcessing ? (
-                      <span>Connecting Sandbox...</span>
+                      <span>Connecting Gateway...</span>
                     ) : (
                       <>
-                        <span>Confirm Payment (${effectiveTotal}.00)</span>
+                        <span>Authorize Payment ({formatINR(total)})</span>
                         <ArrowRight className="h-4 w-4" />
                       </>
                     )}
                   </button>
 
-                  <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-500">
-                    <ShieldCheck className="h-3.5 w-3.5 text-cyan-400" />
-                    <span>Your payment information is secure and encrypted</span>
+                  <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+                    <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" />
+                    <span>256-bit encrypted checkout sandbox</span>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Right: Order Summary matching mobile screenshot */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="rounded-2xl border border-slate-800 bg-[#0d1226]/90 p-5 shadow-xl backdrop-blur-md space-y-4">
-              <h2 className="text-base font-bold text-white border-b border-slate-800 pb-3">
+          {/* Right Order Summary */}
+          <div className="lg:col-span-5 space-y-4">
+            <div className="saas-card p-5 space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">
                 Order Summary
-              </h2>
+              </h3>
 
-              <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-                {checkoutItems.map((item) => (
-                  <div key={item.product.id} className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-xl bg-[#060810] p-1.5 flex items-center justify-center border border-slate-800 shrink-0">
-                      <img
-                        src={item.product.image}
-                        alt={item.product.name}
-                        className="max-h-full max-w-full object-contain"
-                      />
-                    </div>
+              <div className="space-y-3">
+                {sampleProducts.map((p) => (
+                  <div key={p.id} className="flex items-center gap-3">
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      className="h-12 w-12 rounded-lg object-cover bg-slate-100 shrink-0"
+                    />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-white truncate">{item.product.name}</p>
-                      <p className="text-[10px] text-slate-400">{item.product.storageOption || "256GB"} · Qty: {item.quantity}</p>
+                      <h4 className="text-xs font-bold text-slate-900 truncate">
+                        {p.name}
+                      </h4>
+                      <p className="text-[11px] text-slate-400">{p.retailer}</p>
                     </div>
-                    <span className="text-xs font-bold text-white">
-                      ${item.product.price * item.quantity}.00
+                    <span className="text-xs font-bold text-slate-900">
+                      {formatINR(p.price)}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="space-y-1.5 pt-3 border-t border-slate-800 text-xs">
-                <div className="flex justify-between text-slate-400">
+              <div className="space-y-1.5 pt-3 border-t border-slate-100 text-xs">
+                <div className="flex justify-between text-slate-500">
                   <span>Subtotal</span>
-                  <span className="text-white">${effectiveSubtotal}.00</span>
+                  <span>{formatINR(subtotal)}</span>
                 </div>
-                {effectiveDiscount > 0 && (
-                  <div className="flex justify-between text-emerald-400 font-bold">
-                    <span>Discount</span>
-                    <span>-${effectiveDiscount}.00</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-slate-400">
-                  <span>Shipping</span>
-                  <span className="text-emerald-400 font-semibold">
-                    {effectiveShipping === 0 ? "Free" : `$${effectiveShipping}.00`}
-                  </span>
+                <div className="flex justify-between text-emerald-600 font-semibold">
+                  <span>Festive Discount</span>
+                  <span>-{formatINR(discount)}</span>
                 </div>
-                <div className="flex justify-between border-t border-slate-800 pt-2 text-base font-bold text-white">
-                  <span>Total</span>
-                  <span className="text-cyan-300">${effectiveTotal}.00</span>
+                <div className="flex justify-between text-slate-500">
+                  <span>Delivery</span>
+                  <span className="text-emerald-600 font-semibold">Free</span>
+                </div>
+                <div className="flex justify-between border-t border-slate-100 pt-2 text-base font-black text-slate-900">
+                  <span>Grand Total</span>
+                  <span className="text-indigo-600">{formatINR(total)}</span>
                 </div>
               </div>
-
             </div>
           </div>
-
         </div>
       )}
-
     </div>
   );
 }

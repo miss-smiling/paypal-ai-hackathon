@@ -56,7 +56,7 @@ export default function CartPanel({
 
       <div className="mt-3 space-y-2 text-sm">
         <div className="space-y-2.5 pb-2">
-          {ledger.items.map((item) => (
+          {ledger.items.map((item: any) => (
             <div
               key={item.id}
               className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-800/60 border border-slate-800"

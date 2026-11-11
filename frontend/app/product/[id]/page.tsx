@@ -1,218 +1,416 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Star,
   ShieldCheck,
-  ShoppingBag,
-  SlidersHorizontal,
-  Check,
-  ArrowLeft,
   Truck,
-  RefreshCw,
-  Plus,
-  Minus,
+  RotateCcw,
   Heart,
+  GitCompare,
+  Bot,
+  ExternalLink,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  TrendingDown,
+  Layers,
+  ChevronRight,
+  ArrowRight,
 } from "lucide-react";
-import { useNovatek } from "@/context/NovatekContext";
-import { SMARTCART_PRODUCTS } from "@/lib/smartcartData";
+import { useSmartCart } from "@/context/SmartCartContext";
+import { productService, watchlistService } from "@/lib/services";
+import { Product } from "@/lib/types";
+import { formatINR } from "@/lib/mockData";
 
-export default function ProductDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ProductDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const resolvedParams = use(params);
-  const { addToCart, toggleCompare, isComparing, addToast } = useNovatek();
+  const { addToCompare, isComparing, addToast } = useSmartCart();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [isWatchlisted, setIsWatchlisted] = useState(false);
 
-  const product =
-    SMARTCART_PRODUCTS.find((p) => p.id === resolvedParams.id) ||
-    SMARTCART_PRODUCTS.find((p) => p.id.includes(resolvedParams.id)) ||
-    SMARTCART_PRODUCTS[0];
+  useEffect(() => {
+    const found = productService.getById(resolvedParams.id) || productService.getAll()[0];
+    if (found) {
+      setProduct(found);
+      setSelectedImage(found.image);
+      const inWatchlist = watchlistService.get().some((w) => w.productId === found.id);
+      setIsWatchlisted(inWatchlist);
+    }
+  }, [resolvedParams.id]);
 
-  const inCompare = isComparing(product.id);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedColor, setSelectedColor] = useState(0);
+  if (!product) {
+    return (
+      <div className="py-20 text-center space-y-4">
+        <h2 className="text-xl font-bold text-slate-800">Product Not Found</h2>
+        <Link href="/dashboard" className="text-sm font-semibold text-indigo-600 hover:underline">
+          Return to Dashboard
+        </Link>
+      </div>
+    );
+  }
 
-  const colors = [
-    { name: "Titanium Blue", bg: "bg-blue-900" },
-    { name: "Natural Titanium", bg: "bg-stone-500" },
-    { name: "White Titanium", bg: "bg-slate-200" },
-    { name: "Black Titanium", bg: "bg-neutral-800" },
-  ];
+  const alternatives = productService.getAlternatives(product.id).slice(0, 3);
+
+  const handleToggleWatchlist = () => {
+    if (isWatchlisted) {
+      const item = watchlistService.get().find((w) => w.productId === product.id);
+      if (item) watchlistService.remove(item.id);
+      setIsWatchlisted(false);
+      addToast("Removed from Watchlist", `${product.name} untracked.`, "info");
+    } else {
+      watchlistService.add(product);
+      setIsWatchlisted(true);
+      addToast("Added to Watchlist", `${product.name} is now tracked for price drops.`, "success");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#07090f] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        
-        {/* Breadcrumb */}
-        <div className="mb-8 flex items-center justify-between text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            <Link href="/" className="inline-flex items-center gap-1 hover:text-white transition-colors">
-              <ArrowLeft className="h-3.5 w-3.5" />
-              <span>SmartCart Store</span>
-            </Link>
-            <span>/</span>
-            <span className="text-slate-500">{product.category}</span>
-            <span>/</span>
-            <span className="text-cyan-400 font-semibold">{product.name}</span>
+    <div className="space-y-10 animate-fade-in">
+      {/* Breadcrumb Navigation */}
+      <nav className="flex items-center gap-2 text-xs text-slate-500">
+        <Link href="/dashboard" className="hover:text-indigo-600">
+          Dashboard
+        </Link>
+        <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
+        <Link href="/compare" className="hover:text-indigo-600">
+          {product.category}
+        </Link>
+        <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
+        <span className="font-semibold text-slate-900 truncate max-w-xs">
+          {product.name}
+        </span>
+      </nav>
+
+      {/* Main Two-Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Image Gallery */}
+        <div className="lg:col-span-5 space-y-4">
+          <div className="aspect-square w-full rounded-3xl bg-white border border-slate-200 shadow-soft overflow-hidden p-6 flex items-center justify-center relative">
+            <img
+              src={selectedImage || product.image}
+              alt={product.name}
+              className="h-full w-full object-contain filter contrast-105"
+            />
+            {product.discountPct > 0 && (
+              <span className="absolute top-4 left-4 px-2.5 py-1 rounded-full text-xs font-black bg-rose-600 text-white shadow-xs">
+                {product.discountPct}% OFF
+              </span>
+            )}
+            <span className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-xs font-bold bg-white/90 backdrop-blur-xs text-slate-800 border border-slate-200 shadow-2xs">
+              {product.retailer}
+            </span>
           </div>
 
-          <button
-            onClick={() => addToast("Saved to Wishlist", `${product.name} saved.`, "info")}
-            className="flex items-center gap-1.5 text-slate-400 hover:text-rose-400"
-          >
-            <Heart className="h-4 w-4" />
-            <span>Save</span>
-          </button>
-        </div>
-
-        {/* Product Details Grid matching sample mobile layout */}
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 items-start">
-          
-          {/* Left: Product Imagery Showcase */}
-          <div className="lg:col-span-6 flex flex-col items-center">
-            <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-3xl border border-slate-800 bg-[#0d1226] p-8 shadow-2xl">
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-cyan-500/10 via-blue-600/10 to-transparent blur-2xl" />
-              <img
-                src={product.image}
-                alt={product.name}
-                className="relative z-10 h-full w-full object-contain filter contrast-105"
-              />
-              {product.badge && (
-                <span className="absolute top-6 left-6 rounded-full bg-blue-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                  {product.badge}
-                </span>
-              )}
-            </div>
-
-            {/* Guarantees */}
-            <div className="mt-6 grid grid-cols-2 gap-4 w-full max-w-md text-xs text-slate-400">
-              <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-[#0a0e1e] p-3">
-                <Truck className="h-4 w-4 text-cyan-400 shrink-0" />
-                <span>Free Express Shipping</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-[#0a0e1e] p-3">
-                <RefreshCw className="h-4 w-4 text-cyan-400 shrink-0" />
-                <span>30-Day Easy Returns</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Technical Specs & Purchasing Actions */}
-          <div className="lg:col-span-6 flex flex-col space-y-6">
-            <div>
-              <h1 className="text-3xl font-black text-white sm:text-4xl">
-                {product.name}
-              </h1>
-
-              <p className="mt-1 text-xs text-slate-400">
-                {product.storageOption || "256GB"} · {colors[selectedColor].name}
-              </p>
-
-              {/* Rating */}
-              <div className="mt-3 flex items-center gap-2 text-xs">
-                <div className="flex items-center gap-1 text-amber-400">
-                  <Star className="h-4 w-4 fill-amber-400" />
-                  <span className="font-bold text-white">{product.rating}</span>
-                </div>
-                <span className="text-slate-500">({(product.reviewCount / 1000).toFixed(1)}k reviews)</span>
-                <span className="text-slate-600">·</span>
-                <span className="text-cyan-400 font-bold flex items-center gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  {product.trustScore}% Verified Trust
-                </span>
-              </div>
-
-              {/* Price */}
-              <div className="mt-4 text-3xl font-black text-white">
-                ${product.price}.00
-              </div>
-
-              {/* Description */}
-              <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-                {product.description}
-              </p>
-
-              {/* Specs Pills Grid matching the sample mobile screen */}
-              <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <div className="rounded-xl border border-slate-800 bg-[#0a0e1e] p-3 text-center">
-                  <span className="text-xs font-bold text-white block">6.3&quot;</span>
-                  <span className="text-[10px] text-slate-400">Display</span>
-                </div>
-                <div className="rounded-xl border border-slate-800 bg-[#0a0e1e] p-3 text-center">
-                  <span className="text-xs font-bold text-white block">256GB</span>
-                  <span className="text-[10px] text-slate-400">Storage</span>
-                </div>
-                <div className="rounded-xl border border-slate-800 bg-[#0a0e1e] p-3 text-center">
-                  <span className="text-xs font-bold text-white block">A18 Pro</span>
-                  <span className="text-[10px] text-slate-400">Chip</span>
-                </div>
-                <div className="rounded-xl border border-slate-800 bg-[#0a0e1e] p-3 text-center">
-                  <span className="text-xs font-bold text-white block">5G Ready</span>
-                  <span className="text-[10px] text-slate-400">Cellular</span>
-                </div>
-              </div>
-
-              {/* Color selector matching sample */}
-              <div className="mt-6">
-                <span className="text-xs font-bold text-slate-300 block mb-2">Color</span>
-                <div className="flex items-center gap-3">
-                  {colors.map((c, idx) => (
-                    <button
-                      key={c.name}
-                      onClick={() => setSelectedColor(idx)}
-                      className={`h-7 w-7 rounded-full border-2 transition-all ${c.bg} ${
-                        selectedColor === idx ? "border-cyan-400 scale-110 shadow-lg shadow-cyan-500/30" : "border-transparent"
-                      }`}
-                      title={c.name}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Quantity Selector & Add to Cart button */}
-              <div className="mt-8 flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-slate-800/80">
-                <div className="flex items-center rounded-xl border border-slate-700 bg-slate-900/80 px-2 py-1">
-                  <button
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="p-2 text-slate-400 hover:text-white"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="px-3 text-sm font-bold text-white">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity((q) => q + 1)}
-                    className="p-2 text-slate-400 hover:text-white"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-
+          {/* Thumbnails */}
+          {product.additionalImages && product.additionalImages.length > 1 && (
+            <div className="flex gap-3 overflow-x-auto pb-1">
+              {product.additionalImages.map((img, i) => (
                 <button
-                  onClick={() => addToCart(product, quantity)}
-                  className="flex-1 w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3.5 text-xs font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-500 transition-all hover:scale-[1.02] active:scale-95"
-                >
-                  <ShoppingBag className="h-4 w-4" />
-                  <span>Add to Cart (${product.price * quantity}.00)</span>
-                </button>
-
-                <button
-                  onClick={() => toggleCompare(product)}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl border px-4 py-3.5 text-xs font-semibold transition-all ${
-                    inCompare
-                      ? "border-cyan-400 bg-cyan-500 text-slate-950 font-bold"
-                      : "border-slate-700 bg-slate-800 text-slate-300 hover:text-white"
+                  key={i}
+                  onClick={() => setSelectedImage(img)}
+                  className={`h-16 w-16 rounded-xl border p-1 bg-white shrink-0 overflow-hidden transition-all ${
+                    selectedImage === img
+                      ? "border-indigo-600 ring-2 ring-indigo-100"
+                      : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  <span>{inCompare ? "Comparing" : "Compare"}</span>
+                  <img src={img} alt="" className="h-full w-full object-contain" />
                 </button>
-              </div>
+              ))}
+            </div>
+          )}
+        </div>
 
+        {/* Right Column: Intelligence & Actions */}
+        <div className="lg:col-span-7 space-y-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                {product.brand}
+              </span>
+              <span className="text-slate-300">·</span>
+              <span className="text-xs text-slate-500 font-medium">
+                {product.category}
+              </span>
+              <div className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-0.5 rounded-full">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                <span>{product.trustScore}% Verified Trust</span>
+              </div>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">
+              {product.name}
+            </h1>
+
+            <p className="text-xs text-slate-500 mt-1 italic font-medium">
+              &quot;{product.tagline}&quot;
+            </p>
+
+            {/* Ratings & Seller */}
+            <div className="flex flex-wrap items-center gap-4 mt-3 pt-3 border-t border-slate-200 text-xs">
+              <div className="flex items-center gap-1.5 text-amber-600 font-bold">
+                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                <span className="text-sm">{product.rating}</span>
+                <span className="text-slate-400 font-normal">
+                  ({product.reviewCount.toLocaleString()} verified ratings)
+                </span>
+              </div>
+              <span className="text-slate-300">|</span>
+              <span className="text-slate-600">
+                Seller: <strong className="text-slate-900">{product.specs.seller}</strong>
+              </span>
             </div>
           </div>
 
+          {/* Pricing Box */}
+          <div className="p-5 rounded-2xl bg-indigo-50/60 border border-indigo-100/80 space-y-3">
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl font-black text-slate-900">
+                {formatINR(product.price)}
+              </span>
+              <span className="text-sm text-slate-400 line-through">
+                {formatINR(product.originalPrice)}
+              </span>
+              <span className="text-xs font-bold text-emerald-600">
+                Save {formatINR(product.originalPrice - product.price)} ({product.discountPct}% off)
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 pt-1">
+              <span className="flex items-center gap-1.5">
+                <Truck className="h-4 w-4 text-indigo-600" />
+                {product.deliveryEstimate} ({product.deliveryCharge === 0 ? "Free Shipping" : formatINR(product.deliveryCharge)})
+              </span>
+              <span className="flex items-center gap-1.5">
+                <RotateCcw className="h-4 w-4 text-indigo-600" />
+                {product.specs.returnPolicy || "7-Day Replacement"}
+              </span>
+            </div>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleToggleWatchlist}
+              className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                isWatchlisted
+                  ? "bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100"
+                  : "bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+              }`}
+            >
+              <Heart className={`h-4 w-4 ${isWatchlisted ? "fill-rose-500 text-rose-500" : ""}`} />
+              <span>{isWatchlisted ? "In Watchlist" : "Add to Watchlist"}</span>
+            </button>
+
+            <button
+              onClick={() => addToCompare(product.id)}
+              className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                isComparing(product.id)
+                  ? "bg-indigo-600 text-white"
+                  : "bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+              }`}
+            >
+              <GitCompare className="h-4 w-4" />
+              <span>{isComparing(product.id) ? "Comparing" : "Compare Specs"}</span>
+            </button>
+
+            <Link
+              href="/assistant"
+              className="py-3 px-4 rounded-xl bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors"
+            >
+              <Bot className="h-4 w-4" />
+              <span>Ask CART</span>
+            </Link>
+
+            <a
+              href={product.retailerUrl || "https://amazon.in"}
+              target="_blank"
+              rel="noreferrer"
+              className="py-3 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-colors"
+            >
+              <span>Buy on {product.retailer}</span>
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          </div>
+
+          {/* AI Verdict Card */}
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-indigo-50/80 via-white to-violet-50/80 border border-indigo-200 shadow-2xs space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-indigo-900 uppercase tracking-wider">
+              <Sparkles className="h-4 w-4 text-indigo-600" />
+              <span>CART AI Verdict</span>
+            </div>
+            <p className="text-sm font-bold text-slate-900">
+              {product.aiVerdict}
+            </p>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              {product.aiSummary}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Specifications & Pros/Cons Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Full Specifications Table (7 cols) */}
+        <div className="lg:col-span-7 saas-card p-6 space-y-4">
+          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <Layers className="h-4 w-4 text-indigo-600" />
+            <span>Full Technical Specifications</span>
+          </h3>
+
+          <div className="divide-y divide-slate-100 text-xs">
+            {Object.entries(product.specs).map(([key, value]) => (
+              <div key={key} className="py-2.5 flex items-center justify-between">
+                <span className="font-semibold text-slate-500 capitalize">
+                  {key.replace(/([A-Z])/g, " $1")}
+                </span>
+                <span className="font-medium text-slate-900 text-right max-w-xs">
+                  {value || "—"}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
+        {/* Pros & Cons and Review Sentiment (5 cols) */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Pros & Cons */}
+          <div className="saas-card p-6 space-y-4">
+            <h3 className="text-base font-bold text-slate-900">Pros & Cons</h3>
+            <div className="space-y-4 text-xs">
+              <div>
+                <span className="font-bold text-emerald-700 block mb-2">
+                  Key Strengths
+                </span>
+                <ul className="space-y-1.5">
+                  {product.pros.map((p, i) => (
+                    <li key={i} className="flex items-start gap-2 text-slate-700">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100">
+                <span className="font-bold text-rose-700 block mb-2">
+                  Things to Keep in Mind
+                </span>
+                <ul className="space-y-1.5">
+                  {product.cons.map((c, i) => (
+                    <li key={i} className="flex items-start gap-2 text-slate-700">
+                      <AlertCircle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
+                      <span>{c}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Customer Sentiment Breakdown */}
+          <div className="saas-card p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">
+                Customer Sentiment
+              </h3>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+                {product.sentiment.overallScore}/100 Score
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>Positive ({product.sentiment.positivePct}%)</span>
+                <span>Negative ({product.sentiment.negativePct}%)</span>
+              </div>
+              <div className="flex h-2.5 rounded-full overflow-hidden bg-slate-200">
+                <div
+                  className="bg-emerald-500"
+                  style={{ width: `${product.sentiment.positivePct}%` }}
+                />
+                <div
+                  className="bg-slate-400"
+                  style={{ width: `${product.sentiment.neutralPct}%` }}
+                />
+                <div
+                  className="bg-rose-500"
+                  style={{ width: `${product.sentiment.negativePct}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Price Movement point */}
+            <div className="pt-2 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
+              <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                <TrendingDown className="h-3.5 w-3.5" />
+                Current price is lowest in 30 days
+              </span>
+              <span className="text-[11px] text-slate-400">
+                {product.priceHistory.length} data points
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Alternative Products Row */}
+      {alternatives.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-slate-900">
+                Alternative Recommendations
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Similar options in the same category worth comparing
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {alternatives.map((alt) => (
+              <div
+                key={alt.id}
+                className="saas-card p-4 flex flex-col justify-between hover:border-indigo-300 transition-colors"
+              >
+                <div>
+                  <div className="aspect-video w-full rounded-xl bg-slate-100 overflow-hidden mb-3">
+                    <img
+                      src={alt.image}
+                      alt={alt.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 line-clamp-1">
+                    {alt.name}
+                  </h4>
+                  <p className="text-xs font-semibold text-indigo-600 mt-1">
+                    {formatINR(alt.price)}
+                  </p>
+                </div>
+                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-xs text-slate-400">{alt.brand}</span>
+                  <Link
+                    href={`/product/${alt.id}`}
+                    className="text-xs font-semibold text-indigo-600 hover:underline flex items-center gap-1"
+                  >
+                    <span>Inspect</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

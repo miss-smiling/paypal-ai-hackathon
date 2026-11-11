@@ -3,80 +3,113 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Sparkles, ArrowRight, ShieldCheck, Lock, Mail } from "lucide-react";
+import { useSmartCart } from "@/context/SmartCartContext";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const router = useRouter();
+  const { addToast } = useSmartCart();
+  const [email, setEmail] = useState("sujit.krishna@smartcart.ai");
+  const [password, setPassword] = useState("••••••••••••");
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleLogin(e: React.FormEvent) {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/");
-  }
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      addToast("Signed In Successfully", "Welcome back to SmartCart AI.", "success");
+      router.push("/dashboard");
+    }, 600);
+  };
 
   return (
-    <div className="mx-auto max-w-md px-4 py-16 space-y-6">
-      <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-8 shadow-2xl backdrop-blur-xl space-y-6">
-        <div className="text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-cyan-600 to-indigo-600 p-2 shadow-lg shadow-cyan-500/20 mb-3">
-            <span className="text-xl">🔐</span>
+    <div className="w-full max-w-md mx-auto p-6 sm:p-8 animate-fade-in">
+      <div className="saas-card p-8 space-y-6 shadow-xl border border-slate-200">
+        {/* Brand */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20 mb-1">
+            <Sparkles className="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-black text-white">Welcome Back</h1>
-          <p className="mt-1 text-xs text-slate-400">
-            Sign in to access saved carts, session budget, and orders.
+          <h1 className="text-2xl font-black text-slate-900">
+            Sign In to SmartCart AI
+          </h1>
+          <p className="text-xs text-slate-500">
+            Enter your credentials to access your shopping dashboard
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        {/* Demo Notice */}
+        <div className="p-3 rounded-xl bg-indigo-50/80 border border-indigo-100 text-[11px] text-indigo-900 flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-indigo-600 shrink-0" />
+          <span>Demo Sandbox: Any email/password will authenticate immediately.</span>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="text-xs font-bold text-slate-300 block mb-1">Email Address</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="judge@paypalhackathon.com"
-              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
-            />
+            <label className="block font-semibold text-slate-700 mb-1">
+              Email Address
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-300 block mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
-            />
+            <div className="flex items-center justify-between mb-1">
+              <label className="font-semibold text-slate-700">Password</label>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  addToast("Password Reset", "Demo reset link sent.", "info");
+                }}
+                className="text-[11px] text-indigo-600 hover:underline"
+              >
+                Forgot password?
+              </a>
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 px-6 py-3 font-bold text-xs text-white shadow-lg shadow-cyan-500/20 hover:opacity-95"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm py-3 px-4 shadow-sm transition-all hover:scale-[1.01]"
           >
-            Sign In
+            {isLoading ? (
+              <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <span>Sign In to Dashboard</span>
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
           </button>
         </form>
 
-        <div className="relative flex py-2 items-center">
-          <div className="flex-grow border-t border-slate-800"></div>
-          <span className="flex-shrink mx-4 text-xs text-slate-500 uppercase font-semibold">Or</span>
-          <div className="flex-grow border-t border-slate-800"></div>
-        </div>
-
-        <Link
-          href="/"
-          className="w-full flex items-center justify-center gap-2 rounded-2xl bg-slate-800 hover:bg-slate-700 px-6 py-3 font-bold text-xs text-slate-200 transition-all border border-slate-700"
-        >
-          <span>Continue as Guest / Judge Tester &rarr;</span>
-        </Link>
-
-        <p className="text-center text-xs text-slate-500">
+        <div className="text-center text-xs text-slate-500 pt-2 border-t border-slate-100">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-bold text-cyan-400 hover:underline">
-            Sign up
+          <Link href="/signup" className="font-bold text-indigo-600 hover:underline">
+            Create an Account
           </Link>
-        </p>
+        </div>
       </div>
     </div>
   );

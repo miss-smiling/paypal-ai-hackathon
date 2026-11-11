@@ -154,7 +154,7 @@ export default function DecisionMatrix({
 
                   {row.missed.length > 0 && (
                     <p className="text-rose-400 text-[11px]">
-                      Missing: {row.missed.map((m) => m.replace(/_/g, " ")).join(", ")}
+                      Missing: {row.missed.map((m: string) => m.replace(/_/g, " ")).join(", ")}
                     </p>
                   )}
                 </div>
@@ -176,9 +176,9 @@ export default function DecisionMatrix({
                 className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-xs hover:border-cyan-500/40 transition-all group"
               >
                 <div className="h-12 w-12 shrink-0 rounded-lg bg-slate-900 p-1 border border-slate-800 flex items-center justify-center overflow-hidden">
-                  {a.product.image_url ? (
+                  {(a.product.image_url || (a.product as any).image) ? (
                     <img
-                      src={a.product.image_url}
+                      src={a.product.image_url || (a.product as any).image}
                       alt={a.product.name}
                       className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform"
                     />

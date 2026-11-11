@@ -38,23 +38,25 @@ SYSTEM_PROMPT = (
 )
 
 GENERAL_SYSTEM_PROMPT = (
-    "You are Cart, the intelligent AI assistant of SmartCart AI. "
-    "You are friendly, insightful, and versatile. "
-    "You excel at answering general knowledge questions, explaining complex academic and technical concepts, "
-    "helping with programming and debugging, generating ideas, summarizing information, and providing expert shopping "
-    "and product advice with value comparisons across Amazon and Flipkart. "
-    "Format responses cleanly with markdown headings, bullet points, and code snippets when appropriate."
+    "You are Cart, the friendly, intelligent, and versatile AI assistant of SmartCart AI. "
+    "Adapt naturally to whatever the user says or asks:\n"
+    "1. Greetings & Casual Chit-Chat (e.g., 'hi', 'hello', 'how are you', 'what's up', 'who are you'): "
+    "Respond warmly, conversationally, and concisely (e.g., 'Hello! How may I help you today?' or 'I am doing great, thank you for asking! How about you? What can I assist you with today?'). Never write an overwhelming essay or tables for a simple greeting.\n"
+    "2. Shopping & Product Advice: Provide expert comparisons, live price analysis in INR across Amazon and Flipkart, and mention that applying coupon SMART10 at checkout with PayPal unlocks an extra 10% discount.\n"
+    "3. General Knowledge, Academics, Coding & Explanations: Directly and accurately answer whatever the user asks with clear markdown, explanations, and code snippets when appropriate.\n"
+    "Always match your tone and response length to the user's intent."
 )
 
 COMMUNITY_SYSTEM_PROMPT = (
-    "You are Cart, the resident AI shopping strategist and multi-domain assistant of SmartCart AI. "
-    "A shopper has tagged you (@Cart) in the community discussion. "
-    "Respond just like Google Gemini: intelligent, deeply knowledgeable, insightful, structured, and versatile across any topic. "
-    "\n\nCapabilities & Guidelines:\n"
-    "1. Products & Hardware: When asked about gadgets, laptops, phones, specs, or buying decisions, compare key specifications (RAM, CPU, display, battery, durability), analyze value across Amazon and Flipkart, give a clear verdict, and mention pricing in INR (₹). Remind users that applying coupon SMART10 at checkout with PayPal gives an extra 10% discount.\n"
-    "2. Programming & Technical: Answer coding questions, explain architectural concepts, provide clean code blocks with language syntax, and discuss complexity or best practices.\n"
-    "3. Academic, Scientific & General Concepts: Explain complex concepts clearly using vivid analogies, logical breakdowns, and real-world context.\n"
-    "4. Tone and Formatting: Format responses cleanly with markdown headings (###, ####), bullet points, bold key terms, tables when comparing multiple options, and code blocks. Be friendly, encouraging, and invite follow-up questions."
+    "You are Cart, the resident AI shopping companion and versatile multi-domain assistant of SmartCart AI. "
+    "A community member has tagged you (@Cart) in the discussion. "
+    "Respond accurately and naturally to whatever the user says or asks, just like Google Gemini:\n\n"
+    "1. Greetings & Casual Chit-Chat (e.g., 'hi', 'hello', 'hey', 'how are you', 'who are you'): "
+    "Respond warmly, conversationally, and concisely (e.g., 'Hello! How may I help you today?' or 'I am doing great, thank you for asking! How are you doing today? What can I help you with?'). Keep greetings friendly and natural without unnecessary walls of text.\n"
+    "2. Products & Hardware: When asked about gadgets, laptops, phones, specs, or buying decisions, compare key specifications, analyze value across Amazon and Flipkart, give a clear verdict, and mention pricing in INR (₹). Remind users that applying coupon SMART10 at checkout with PayPal gives an extra 10% discount.\n"
+    "3. Programming & Technical: Answer coding questions directly, provide clean runnable code blocks with language syntax, and discuss complexity or best practices.\n"
+    "4. Academic, Scientific, Math & General Knowledge: Explain concepts clearly and directly answer the exact question asked.\n"
+    "5. Tone & Formatting: Be helpful, friendly, and adaptive. Match the depth and length of your response to the user's intent."
 )
 
 
@@ -148,6 +150,48 @@ def _builtin_general_reply(message: str, history: list[dict] | None = None) -> t
         "How do I optimize React re-renders with useMemo and useCallback?",
         "Compare iPhone 15 and Samsung Galaxy S24 features",
     ]
+
+    # 0. Greetings & Casual Chit-Chat
+    if any(q == g or q.startswith(g + " ") or q.endswith(" " + g) or q in [g + "!", g + ".", g + "?"] for g in ["hi", "hello", "hey", "hola", "namaste", "good morning", "good evening", "good afternoon"]):
+        return (
+            "Hello! 👋 How may I help you today? Whether you're looking for product advice, price comparisons across Amazon and Flipkart, help with programming, or have general questions, I'm here for you!",
+            [
+                "What are the best laptops for programming under ₹70,000?",
+                "How do I apply coupon SMART10 at checkout?",
+                "Compare top noise-cancelling headphones",
+                "Explain the difference between OAuth2 and JWT",
+            ],
+        )
+
+    if any(k in q for k in ["how are you", "how are u", "how r u", "how do you do", "how's it going", "hows it going"]):
+        return (
+            "I'm doing great, thank you for asking! 😊 How are you doing today? What can I help you with?",
+            [
+                "Help me find a budget laptop",
+                "Explain React performance optimization",
+                "What discounts are available right now?",
+            ],
+        )
+
+    if any(k in q for k in ["who are you", "what is your name", "what are you"]):
+        return (
+            "I'm **Cart**, your AI shopping companion and intelligent assistant on SmartCart AI! You can ask me anything from technical specs, live price comparisons, and coupon savings to coding, academic concepts, or everyday questions. How can I assist you today?",
+            [
+                "Show me top laptop recommendations",
+                "Tell me how coupon discounts work",
+                "Explain quantum computing in simple terms",
+            ],
+        )
+
+    if any(k in q for k in ["thank you", "thanks", "thx", "appreciate it"]):
+        return (
+            "You're very welcome! 😊 Feel free to ask if there's anything else you need help with.",
+            [
+                "Compare products",
+                "Find nearby stores",
+                "Explore community discussions",
+            ],
+        )
 
     # Programming & Tech
     if any(k in q for k in ["python", "code", "javascript", "react", "typescript", "function", "bug", "sql", "api", "jwt", "oauth"]):
@@ -262,6 +306,26 @@ async def general_chat(
 def _builtin_community_gemini_reply(clean_msg: str, recent_context: list[str]) -> str:
     """Intelligent multi-domain fallback response generator when LLM is unavailable."""
     q = clean_msg.lower().strip()
+
+    # 0. Greetings & Casual Chit-Chat
+    if any(q == g or q.startswith(g + " ") or q.endswith(" " + g) or q in [g + "!", g + ".", g + "?"] for g in ["hi", "hello", "hey", "hola", "namaste", "good morning", "good evening", "good afternoon"]):
+        return "Hello! 👋 How may I help you today? Whether you need product advice, price comparisons, help with programming, or have questions about anything, I'm right here!"
+
+    if any(k in q for k in ["how are you", "how are u", "how r u", "how do you do", "how's it going", "hows it going"]):
+        return "I'm doing great, thank you for asking! 😊 How are you doing today? What can I help you with?"
+
+    if any(k in q for k in ["who are you", "what is your name", "what are you", "your name"]):
+        return (
+            "I'm **Cart**, your AI shopping companion and multi-domain assistant on SmartCart AI! "
+            "You can ask me anything—from live gadget specs, deals, and coupon savings to programming, "
+            "academic concepts, or casual chit-chat. How can I assist you today?"
+        )
+
+    if any(k in q for k in ["thanks", "thank you", "thx", "appreciate it"]):
+        return "You're very welcome! 😊 Feel free to tag `@Cart` anytime if you have more questions."
+
+    if "joke" in q:
+        return "Why do programmers prefer dark mode?\n\nBecause light attracts bugs! 🐛💻\n\nWhat else would you like to know?"
 
     # 1. Lenovo vs Asus / CS Laptop Query
     if ("lenovo" in q or "slim 3" in q) and ("asus" in q or "vivobook" in q):
@@ -385,12 +449,12 @@ async def community_reply(message: str, recent_context: list[str]) -> str:
     prompt = (
         f"Community discussion context:\n{context_str}\n\n"
         f"User question to @Cart: {clean_msg or message}\n\n"
-        "Please provide a comprehensive, Gemini-level response directly answering the question with clean markdown."
+        "Directly and naturally answer whatever the user asked or said, matching your tone and length to their intent."
     )
 
     llm_res = await _llm(COMMUNITY_SYSTEM_PROMPT, prompt, max_tokens=2500)
-    if llm_res and len(llm_res[0].strip()) > 80:
-        return llm_res[0]
+    if llm_res and llm_res[0].strip():
+        return llm_res[0].strip()
 
     # Built-in contextual community response generator (Gemini-quality fallback)
     return _builtin_community_gemini_reply(clean_msg or message, recent_context)

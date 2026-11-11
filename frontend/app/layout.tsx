@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./light-theme.css";
 import { NovatekProvider } from "@/context/NovatekContext";
 import NovatekNavbar from "@/components/NovatekNavbar";
 import NovatekFooter from "@/components/NovatekFooter";
@@ -19,7 +20,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
+      <head>
+        {/* Apply the saved theme before first paint so there is no dark flash in light mode */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(localStorage.getItem('smartcart_theme')==='light'){var r=document.documentElement;r.classList.remove('dark');r.classList.add('light')}}catch(e){}",
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-[#070a14] font-sans text-slate-100 antialiased flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
         
         {/* Ambient Dark Neon Gradients */}

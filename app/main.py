@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app import paypal, services
+from app import assistant, paypal, services
 from app.catalog import PRODUCTS
 from app.config import settings
 from app.db import SessionLocal, init_db
@@ -67,6 +67,18 @@ class CaptureRequest(BaseModel):
     order_id: str
 
 
+class ChatTurn(BaseModel):
+    role: str = Field(pattern="^(user|assistant)$")
+    text: str = Field(max_length=1000)
+
+
+class ChatRequest(BaseModel):
+    session_id: str = Field(min_length=8, max_length=64)
+    message: str = Field(min_length=2, max_length=500)
+    history: list[ChatTurn] = Field(default_factory=list, max_length=12)
+    coupon_code: str | None = None
+
+
 # ---------- Routes ----------
 
 @app.get("/api/health")
@@ -99,6 +111,20 @@ async def search(req: SearchRequest, db: Session = Depends(get_db)) -> dict:
     )
     services.record_run(db, req.session_id, req.query.strip(), result)
     return result
+
+
+@app.post("/api/assistant/chat")
+async def assistant_chat(req: ChatRequest, db: Session = Depends(get_db)) -> dict:
+    """Shopping help (runs the agent pipeline) and order/checkout support in one endpoint."""
+    if not req.message.strip():
+        raise HTTPException(status_code=400, detail="Message is empty")
+    return await assistant.chat(
+        db,
+        session_id=req.session_id,
+        message=req.message.strip(),
+        history=[t.model_dump() for t in req.history],
+        coupon_code=req.coupon_code,
+    )
 
 
 @app.post("/api/checkout/create-order", status_code=201)

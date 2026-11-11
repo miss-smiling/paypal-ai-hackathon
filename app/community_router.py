@@ -266,15 +266,21 @@ async def create_message(
     db.commit()
     db.refresh(user_msg)
 
-    # 5. Check for @Cart invocation
+    # 5. Check for @Cart invocation (mentions or direct reply to bot)
     bot_reply_dict = None
-    if re.search(r"@cart\b", content, flags=re.IGNORECASE):
-        # Fetch surrounding recent context (up to 4 prior messages)
+    should_reply = bool(re.search(r"@cart(\b|[:!?,]|$)|@cartai\b|@smartcart\b|\bcart ai\b", content, flags=re.IGNORECASE))
+    if not should_reply and body.parent_id:
+        parent_msg = db.get(CommunityMessage, body.parent_id)
+        if parent_msg and parent_msg.is_bot:
+            should_reply = True
+
+    if should_reply:
+        # Fetch surrounding recent context (up to 6 prior messages)
         recent_msgs = (
             db.query(CommunityMessage)
             .filter(CommunityMessage.deleted == False, CommunityMessage.id != user_msg.id)
             .order_by(desc(CommunityMessage.created_at))
-            .limit(4)
+            .limit(6)
             .all()
         )
         context_lines = [f"{m.user_name}: {m.content}" for m in reversed(recent_msgs)]

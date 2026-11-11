@@ -26,7 +26,7 @@ class Settings:
     flat_shipping_fee: float = field(default_factory=lambda: float(
         os.getenv("FLAT_SHIPPING_FEE", "5.99")))
     gemini_api_key: str | None = field(default_factory=lambda: os.getenv("GEMINI_API_KEY") or None)
-    gemini_model: str = field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-3.5-flash"))
+    gemini_model: str = field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite"))
     openai_api_key: str | None = field(default_factory=lambda: os.getenv("OPENAI_API_KEY") or None)
     openai_model: str = field(default_factory=lambda: os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
     paypal_env: str = field(default_factory=lambda: os.getenv("PAYPAL_ENV", "sandbox"))

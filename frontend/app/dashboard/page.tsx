@@ -20,7 +20,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useSmartCart } from "@/context/SmartCartContext";
-import { productService, budgetService, watchlistService, alertService, historyService } from "@/lib/services";
+import { productService, budgetService, watchlistService, alertService, historyService, catalogService } from "@/lib/services";
 import { Product, BudgetPlan, ShoppingHistoryEvent } from "@/lib/types";
 import { formatINR } from "@/lib/mockData";
 import PayPalLogo from "@/components/ui/PayPalLogo";
@@ -33,7 +33,11 @@ export default function DashboardPage() {
   const [greeting, setGreeting] = useState("Good morning");
 
   useEffect(() => {
-    setProducts(productService.getAll());
+    setProducts(productService.getAll()); // instant render from mock cache
+    // Swap in the backend catalog (mock fallback) once hydrated.
+    catalogService.hydrate().then(() => {
+      setProducts(productService.getAll());
+    });
     setBudget(budgetService.get());
     setHistory(historyService.get());
 

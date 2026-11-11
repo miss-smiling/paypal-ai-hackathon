@@ -83,7 +83,15 @@ class ChatRequest(BaseModel):
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"status": "ok", "paypal_configured": paypal.is_configured(), "version": app.version}
+    return {
+        "status": "ok",
+        "paypal_configured": paypal.is_configured(),
+        "version": app.version,
+        "live_feed": {
+            "enabled": bool(settings.serpapi_api_key),
+            "provider": "serpapi" if settings.serpapi_api_key else "local_catalog",
+        },
+    }
 
 
 @app.get("/api/products")

@@ -1,5 +1,26 @@
 import type { ChatResult, ChatTurn, CreatedOrder, Insights, Order, SearchResult } from "./types";
 
+// Shape of the dicts returned by the backend GET /api/products (app/catalog.py).
+// Prices are in USD; the storefront displays INR, so services.ts converts them.
+export interface BackendProduct {
+  id: string;
+  name: string;
+  brand: string;
+  category: string;
+  price: number;
+  specs?: Record<string, string | number | boolean>;
+  rating: number;
+  stock?: boolean;
+  image_url?: string | null;
+}
+
+export interface HealthStatus {
+  status: string;
+  paypal_configured: boolean;
+  version: string;
+  live_feed?: { enabled: boolean; provider: string };
+}
+
 const BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
 export class ApiError extends Error {
@@ -77,4 +98,8 @@ export const api = {
   insights: (sessionId: string) => request<Insights>(`/api/sessions/${sessionId}/insights`),
 
   orders: (sessionId: string) => request<Order[]>(`/api/sessions/${sessionId}/orders`),
+
+  products: () => request<BackendProduct[]>("/api/products"),
+
+  health: () => request<HealthStatus>("/api/health"),
 };

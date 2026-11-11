@@ -1,3 +1,6 @@
+import { api } from "./api";
+import type { BackendProduct } from "./api";
+import { getSessionId } from "./session";
 import {
   MOCK_PRODUCTS,
   MOCK_WATCHLIST,
@@ -17,6 +20,9 @@ import {
   UserProfile,
   SavedConversation,
   ChatMessage,
+  ChatProductCard,
+  ChatResult,
+  ProductSpecs,
   Retailer,
   ProductCategory,
 } from "./types";
@@ -52,9 +58,137 @@ const KEYS = {
   CONVERSATIONS: "smartcart_conversations_v3",
 };
 
+// ---------------------------------------------------------------
+// Backend catalog. Hydrated once per browser session from
+// GET /api/products; falls back to the bundled mock catalog so the
+// UI keeps working when the backend is unreachable (demo mode).
+// ---------------------------------------------------------------
+const USD_TO_INR = 83; // the backend demo catalog (app/catalog.py) is priced in USD
+
+const CATEGORY_TO_STORE: Record<string, ProductCategory> = {
+  laptop: "Laptops",
+  smartphone: "Smartphones",
+  headphones: "Audio",
+  wearables: "Wearables",
+  tablet: "Accessories",
+  charger: "Accessories",
+  keyboard: "Accessories",
+  smart_home: "Home Appliances",
+  camera: "Accessories",
+};
+
+function retailerFromBrand(brand: string): Retailer {
+  const b = brand.toLowerCase();
+  if (b.includes("amazon")) return "Amazon";
+  if (b.includes("flipkart")) return "Flipkart";
+  if (b.includes("reliance")) return "Reliance Digital";
+  return "Croma";
+}
+
+export function backendToProduct(p: BackendProduct): Product {
+  const category = CATEGORY_TO_STORE[p.category] ?? "Accessories";
+  const retailer = retailerFromBrand(p.brand);
+  const price = Math.round(p.price * USD_TO_INR);
+  const rating = p.rating ?? 4.3;
+  const specs: ProductSpecs = {};
+  for (const [k, v] of Object.entries(p.specs ?? {})) {
+    specs[k] = typeof v === "string" ? v : String(v);
+  }
+  const reviewCount =
+    typeof p.specs?.reviews_count === "number" ? p.specs.reviews_count : 0;
+
+  return {
+    id: p.id,
+    name: p.name,
+    brand: p.brand,
+    category,
+    price,
+    originalPrice: price,
+    discountPct: 0,
+    rating,
+    reviewCount,
+    retailer,
+    retailerUrl: typeof p.specs?.link === "string" ? p.specs.link : undefined,
+    inStock: p.stock ?? true,
+    deliveryEstimate: "3-5 days",
+    deliveryCharge: 0,
+    image: p.image_url || "/avatar.png",
+    image_url: p.image_url || undefined,
+    tagline: `${p.brand} ${p.category}`,
+    description: `${p.name} by ${p.brand}.`,
+    specs,
+    pros: [],
+    cons: [],
+    aiSummary: "Live catalog listing.",
+    aiVerdict: "",
+    sentiment: {
+      positivePct: 0,
+      neutralPct: 0,
+      negativePct: 0,
+      overallScore: Math.round(rating * 20),
+      positiveThemes: [],
+      negativeThemes: [],
+      commonComplaints: [],
+      reliabilityScore: 100,
+    },
+    priceHistory: [{ date: "Today", price, retailer }],
+    trustScore: Math.round(rating * 20),
+  };
+}
+
+let catalogProducts: Product[] = MOCK_PRODUCTS;
+let hydratePromise: Promise<"backend" | "mock"> | null = null;
+
+// POST /api/assistant/chat responses are typed by ChatResult in types.ts.
+function backendChatToMessage(res: ChatResult): ChatMessage {
+  const msg: ChatMessage = {
+    id: "msg-" + Date.now(),
+    sender: "cart",
+    text: res.reply,
+    timestamp: "Just now",
+  };
+  const matrix = res.search?.matrix ?? [];
+  if (matrix.length) {
+    msg.products = matrix.slice(0, 3).map((row, i): ChatProductCard => ({
+      id: row.product.id,
+      name: row.product.name,
+      price: Math.round((row.product.price ?? 0) * USD_TO_INR),
+      rating: row.product.rating ?? 4.3,
+      retailer: retailerFromBrand(row.product.brand),
+      badge: i === 0 ? "Top Pick" : undefined,
+      aiNote: `Spec match ${Math.round(row.match_score * 100)}% · review trust ${row.trust_score}%`,
+      image: row.product.image_url || "/avatar.png",
+    }));
+  }
+  return msg;
+}
+
+export const catalogService = {
+  source: "mock" as "backend" | "mock",
+  // Fetch the backend catalog once; safe to call from any page effect.
+  hydrate: (): Promise<"backend" | "mock"> => {
+    if (!isBrowser) return Promise.resolve("mock");
+    if (hydratePromise) return hydratePromise;
+    hydratePromise = api
+      .products()
+      .then((rows) => {
+        const live = (rows ?? []).map(backendToProduct);
+        // Mock entries not present in the backend stay available.
+        const mockOnly = MOCK_PRODUCTS.filter(
+          (m) => !live.some((l) => l.id === m.id)
+        );
+        catalogProducts = [...live, ...mockOnly];
+        catalogService.source = "backend";
+        return "backend" as const;
+      })
+      .catch(() => "mock" as const);
+    return hydratePromise;
+  },
+};
+
 export const productService = {
   getAll: (filters?: { category?: ProductCategory; retailer?: Retailer; search?: string }): Product[] => {
-    let list = [...MOCK_PRODUCTS];
+    let list = [...catalogProducts];
     if (filters?.category) {
       list = list.filter((p) => p.category === filters.category);
     }
@@ -74,13 +208,13 @@ export const productService = {
   },
 
   getById: (id: string): Product | undefined => {
-    return MOCK_PRODUCTS.find((p) => p.id === id);
+    return catalogProducts.find((p) => p.id === id);
   },
 
   getAlternatives: (id: string): Product[] => {
-    const current = MOCK_PRODUCTS.find((p) => p.id === id);
+    const current = catalogProducts.find((p) => p.id === id);
     if (!current) return [];
-    return MOCK_PRODUCTS.filter(
+    return catalogProducts.filter(
       (p) => p.category === current.category && p.id !== current.id
     );
   },
@@ -330,7 +464,19 @@ export const chatService = {
     setStorageItem(KEYS.CONVERSATIONS, [conversation, ...filtered]);
   },
 
+  // Prefer the real backend agent pipeline (/api/assistant/chat); fall back to
+  // the local heuristic response when the backend is unreachable.
   generateAiResponse: async (query: string): Promise<ChatMessage> => {
+    try {
+      const res = await api.chat(getSessionId(), query);
+      return backendChatToMessage(res);
+    } catch {
+      return chatService._generateLocal(query);
+    }
+  },
+
+  // Local heuristic response (no backend). Kept as the offline/demo fallback.
+  _generateLocal: async (query: string): Promise<ChatMessage> => {
     // Realistic AI shopping assistant parsing & synthesis
     await new Promise((r) => setTimeout(r, 900));
 

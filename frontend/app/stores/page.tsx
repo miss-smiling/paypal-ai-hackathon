@@ -40,6 +40,7 @@ export default function NearbyStoresPage() {
   const { addToast } = useSmartCart();
   const [stores, setStores] = useState<StoreItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [searchLocation, setSearchLocation] = useState("Bangalore");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedRadius, setSelectedRadius] = useState<number>(10);
@@ -54,18 +55,26 @@ export default function NearbyStoresPage() {
     query?: string;
     category?: string;
     radius_km?: number;
+    useCoords?: boolean;
   }) => {
     setLoading(true);
+    const useGPS = params.useCoords !== false;
+    const targetLat = params.lat !== undefined ? params.lat : (useGPS ? detectedCoords?.lat : undefined);
+    const targetLon = params.lon !== undefined ? params.lon : (useGPS ? detectedCoords?.lon : undefined);
+
     try {
       const res = await api.searchNearbyStores({
-        lat: params.lat,
-        lon: params.lon,
-        query: params.query || searchLocation,
-        category: params.category || selectedCategory,
-        radius_km: params.radius_km || selectedRadius,
+        lat: targetLat,
+        lon: targetLon,
+        query: targetLat !== undefined ? undefined : (params.query ?? searchLocation),
+        category: params.category ?? selectedCategory,
+        radius_km: params.radius_km ?? selectedRadius,
       });
       setStores(res.stores);
       setResolvedCenter(res.search_center.location_name);
+      if (res.search_center.location_name && targetLat !== undefined) {
+        setSearchLocation(res.search_center.location_name);
+      }
     } catch (err: any) {
       addToast("Store Search Notice", "Could not load live stores; displaying nearby verified network.", "info");
     } finally {
@@ -74,40 +83,84 @@ export default function NearbyStoresPage() {
   };
 
   useEffect(() => {
-    fetchStores({ query: "Bangalore", category: "All", radius_km: 10 });
+    fetchStores({ query: "Bangalore", category: "All", radius_km: 10, useCoords: false });
   }, []);
 
-  // Use browser Geolocation (HTML5)
-  const handleDetectLocation = () => {
+  // Use browser Geolocation (HTML5) with automatic IP Fallback
+  const handleDetectLocation = async () => {
+    setLocating(true);
+    setLoading(true);
+
+    const tryIpFallback = async () => {
+      try {
+        const ipRes = await api.locateIp();
+        if (ipRes && ipRes.lat && ipRes.lon) {
+          const coords = { lat: ipRes.lat, lon: ipRes.lon };
+          setDetectedCoords(coords);
+          setSearchLocation(ipRes.location_name);
+          await fetchStores({
+            lat: coords.lat,
+            lon: coords.lon,
+            category: selectedCategory,
+            radius_km: selectedRadius,
+            useCoords: true,
+          });
+          addToast("Location Located (Network)", `Located near ${ipRes.location_name}.`, "info");
+          return true;
+        }
+      } catch {
+        // Fallback failed
+      }
+      return false;
+    };
+
     if (!navigator.geolocation) {
-      addToast("Geolocation Unsupported", "Please type your city or PIN code manually.", "warning");
+      const ok = await tryIpFallback();
+      if (!ok) {
+        addToast("Geolocation Unsupported", "Please type your city or PIN code manually.", "warning");
+      }
+      setLocating(false);
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
         setDetectedCoords(coords);
-        setSearchLocation("Current GPS Location");
-        fetchStores({
+        setSearchLocation("Locating GPS coordinates...");
+        await fetchStores({
           lat: coords.lat,
           lon: coords.lon,
           category: selectedCategory,
           radius_km: selectedRadius,
+          useCoords: true,
         });
-        addToast("Location Detected", "Found nearby physical retail stores.", "success");
+        addToast("GPS Located", "Found retail stores around your physical position.", "success");
+        setLocating(false);
       },
-      (error) => {
+      async (error) => {
+        // Smoothly fall back to IP network location if permission denied or timeout
+        const ok = await tryIpFallback();
+        if (!ok) {
+          addToast(
+            "Location Permission Denied",
+            "You can still search by typing your city, locality, or PIN code.",
+            "info"
+          );
+        }
+        setLocating(false);
         setLoading(false);
-        addToast(
-          "Location Permission Denied",
-          "You can still search by typing your city, locality, or PIN code.",
-          "info"
-        );
       },
-      { timeout: 8000 }
+      { enableHighAccuracy: true, timeout: 9000, maximumAge: 30000 }
     );
+  };
+
+  const handleClearGps = () => {
+    setDetectedCoords(null);
+    setSearchLocation("Bangalore");
+    fetchStores({ query: "Bangalore", useCoords: false });
+    addToast("GPS Cleared", "Reset to city search mode.", "info");
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -118,6 +171,7 @@ export default function NearbyStoresPage() {
       query: searchLocation.trim(),
       category: selectedCategory,
       radius_km: selectedRadius,
+      useCoords: false,
     });
   };
 
@@ -165,13 +219,27 @@ export default function NearbyStoresPage() {
               value={searchLocation}
               onChange={(e) => setSearchLocation(e.target.value)}
               placeholder="Search by city, locality or PIN code (e.g. Bangalore, 560038, Connaught Place)..."
-              className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
+              className="w-full rounded-xl border border-slate-200 pl-10 pr-24 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
             />
+            {detectedCoords && (
+              <div className="absolute right-2 top-2 flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>GPS Active</span>
+                <button
+                  type="button"
+                  onClick={handleClearGps}
+                  className="ml-1 text-emerald-800 hover:text-emerald-950 font-black"
+                  title="Clear GPS and return to manual search"
+                >
+                  ×
+                </button>
+              </div>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || locating}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-indigo-700 shadow-2xs transition-colors shrink-0 disabled:opacity-50"
           >
             <Search className="h-3.5 w-3.5" />
@@ -181,12 +249,16 @@ export default function NearbyStoresPage() {
           <button
             type="button"
             onClick={handleDetectLocation}
-            disabled={loading}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 px-4 py-2.5 text-xs font-semibold text-slate-700 transition-colors shrink-0 disabled:opacity-50"
-            title="Use device location via GPS"
+            disabled={loading || locating}
+            className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-semibold transition-all shrink-0 disabled:opacity-50 ${
+              detectedCoords
+                ? "border-emerald-300 bg-emerald-50/80 text-emerald-800 shadow-2xs"
+                : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700"
+            }`}
+            title="Use device location via GPS or network"
           >
-            <Navigation className="h-3.5 w-3.5 text-emerald-600" />
-            <span>Use My Location</span>
+            <Navigation className={`h-3.5 w-3.5 text-emerald-600 ${locating ? "animate-spin" : ""}`} />
+            <span>{locating ? "Locating..." : detectedCoords ? "Update Location" : "Use My Location"}</span>
           </button>
         </form>
 

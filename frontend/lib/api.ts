@@ -308,6 +308,11 @@ export const api = {
     }),
 
   // Nearby Physical Store Discovery
+  locateIp: () =>
+    request<{ status: string; lat: number; lon: number; city: string; location_name: string }>(
+      "/api/stores/locate-ip"
+    ),
+
   searchNearbyStores: (params: {
     lat?: number;
     lon?: number;

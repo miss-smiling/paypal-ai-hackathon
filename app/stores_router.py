@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from app.auth_router import get_db
@@ -182,6 +182,61 @@ async def geocode_query(query: str, db: Session) -> tuple[float, float, str]:
     return 12.9716, 77.5946, f"{query.title()} (Estimated Region)"
 
 
+async def reverse_geocode(lat: float, lon: float, db: Session) -> str:
+    """Reverse-geocode GPS coordinates into an address/city using Nominatim with DB caching."""
+    rounded_lat = round(lat, 3)
+    rounded_lon = round(lon, 3)
+    cache_key = f"rev_{rounded_lat}_{rounded_lon}"
+
+    cached = db.query(StoreCache).filter(StoreCache.cache_key == cache_key).first()
+    if cached and cached.data:
+        return cached.data[0].get("display_name", f"{lat:.4f}, {lon:.4f}")
+
+    try:
+        url = "https://nominatim.openstreetmap.org/reverse"
+        headers = {"User-Agent": "SmartCartAI-StoreFinder/1.0 (+https://smartcart.ai)"}
+        params = {"lat": lat, "lon": lon, "format": "json", "zoom": 14}
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            resp = await client.get(url, params=params, headers=headers)
+            if resp.status_code == 200 and resp.json():
+                data = resp.json()
+                addr = data.get("address", {})
+                neighbourhood = (
+                    addr.get("suburb")
+                    or addr.get("neighbourhood")
+                    or addr.get("residential")
+                    or addr.get("road")
+                )
+                city = (
+                    addr.get("city")
+                    or addr.get("town")
+                    or addr.get("municipality")
+                    or addr.get("county")
+                )
+                country = addr.get("country", "")
+
+                parts = [p for p in [neighbourhood, city, country] if p]
+                loc_name = ", ".join(parts) if parts else data.get("display_name", f"{lat:.4f}, {lon:.4f}")
+
+                new_cache = StoreCache(
+                    cache_key=cache_key,
+                    data=[{"lat": lat, "lon": lon, "display_name": loc_name}],
+                    created_at=datetime.now(timezone.utc),
+                )
+                db.add(new_cache)
+                db.commit()
+                return loc_name
+    except Exception:
+        pass
+
+    # Quick proximity check to known cities
+    for city_name, coords in KNOWN_CITIES.items():
+        if haversine_km(lat, lon, coords[0], coords[1]) < 25.0:
+            return f"{city_name.title()}, Identified Area"
+
+    return f"{lat:.4f}, {lon:.4f} (GPS Location)"
+
+
 async def search_osm_overpass(lat: float, lon: float, radius_km: float) -> list[dict]:
     """Search OpenStreetMap Overpass API for real registered retail stores within radius."""
     radius_meters = int(min(radius_km, 20.0) * 1000)
@@ -247,6 +302,71 @@ async def search_osm_overpass(lat: float, lon: float, radius_km: float) -> list[
     return []
 
 
+@router.get("/locate-ip")
+async def locate_by_ip(request: Request) -> dict:
+    """Fallback geolocation using client IP when device GPS is disabled or blocked."""
+    client_ip = (
+        request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+        or (request.client.host if request.client else "")
+    )
+
+    # If localhost/private IP, fallback to public IP lookup or default
+    if not client_ip or client_ip in ("127.0.0.1", "::1", "localhost") or client_ip.startswith("192.168.") or client_ip.startswith("10."):
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                res = await client.get("https://ipapi.co/json/")
+                if res.status_code == 200:
+                    d = res.json()
+                    lat = float(d.get("latitude", 12.9716))
+                    lon = float(d.get("longitude", 77.5946))
+                    city = d.get("city", "Bangalore")
+                    country = d.get("country_name", "India")
+                    return {
+                        "status": "success",
+                        "lat": lat,
+                        "lon": lon,
+                        "city": city,
+                        "location_name": f"{city}, {country}",
+                    }
+        except Exception:
+            pass
+
+        return {
+            "status": "success",
+            "lat": 12.9716,
+            "lon": 77.5946,
+            "city": "Bangalore",
+            "location_name": "Bangalore, India",
+        }
+
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            res = await client.get(f"https://ipapi.co/{client_ip}/json/")
+            if res.status_code == 200:
+                d = res.json()
+                lat = float(d.get("latitude", 12.9716))
+                lon = float(d.get("longitude", 77.5946))
+                city = d.get("city", "Bangalore")
+                country = d.get("country_name", "India")
+                return {
+                    "status": "success",
+                    "lat": lat,
+                    "lon": lon,
+                    "city": city,
+                    "location_name": f"{city}, {country}",
+                }
+    except Exception:
+        pass
+
+    return {
+        "status": "success",
+        "lat": 12.9716,
+        "lon": 77.5946,
+        "city": "Bangalore",
+        "location_name": "Bangalore, India",
+    }
+
+
 @router.get("/search")
 async def search_stores(
     lat: float | None = Query(default=None, ge=-90, le=90),
@@ -260,13 +380,12 @@ async def search_stores(
     Accepts GPS coordinates or manual location input (city, locality, PIN code).
     Returns store name, category, address, distance, directions URL, and clear inventory notes.
     """
-    location_name = "Your Current Location"
-    if lat is None or lon is None:
-        if not query or not query.strip():
-            # Default to Bangalore Tech Corridor if nothing provided
-            lat, lon, location_name = 12.9716, 77.5946, "Bangalore, India"
-        else:
-            lat, lon, location_name = await geocode_query(query.strip(), db)
+    if lat is not None and lon is not None:
+        location_name = await reverse_geocode(lat, lon, db)
+    elif query and query.strip():
+        lat, lon, location_name = await geocode_query(query.strip(), db)
+    else:
+        lat, lon, location_name = 12.9716, 77.5946, "Bangalore, India"
 
     # 1. Search OpenStreetMap Overpass
     stores = await search_osm_overpass(lat, lon, radius_km)

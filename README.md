@@ -64,14 +64,19 @@ Online shoppers are overwhelmed by information overload: conflicting reviews, vo
 
 - **Natural-language search.** Gemini or OpenAI parses the request when a key is set. Otherwise a rule-based parser handles it, so the app runs with no keys.
 - **Multi-agent pipeline (LangGraph).** Intent, discovery, review trust, budget and optimizer agents run as a graph. Review and budget agents run in parallel. Every run writes an agent trace to the database.
+- **Backend-connected frontend.** The UI hydrates its catalog from `GET /api/products` and the assistant chat runs the real agent pipeline (`POST /api/assistant/chat`). If the backend is unreachable, the UI transparently falls back to bundled mock data, so the demo never breaks.
+- **Live product feed (SerpApi).** With `SERPAPI_API_KEY` set, discovery searches real Google Shopping (India) listings, normalizes them into the pipeline, registers them for PayPal checkout, and caches results for 15 minutes (`/api/health` reports `live_feed` status).
 - **Decision matrix.** Products are ranked by spec match, verified-review trust and value, not by sponsored placement.
 - **Review sentiment guard.** Duplicate and unverified five-star reviews are removed before trust is scored.
 - **Coupons and cart pricing.** The best valid coupon is applied and shipping is calculated.
 - **Budget intelligence.** Per-session budget tracking. If the top pick is over the remaining budget, cheaper alternatives are suggested.
+- **Real checkout flow in the UI.** The checkout page calls `POST /api/checkout/create-order` and `/api/checkout/capture` end to end: idempotency keys per attempt, risk-check rejections rendered inline with their reasons, and PayPal `approve_url` handling with a capture confirmation step.
 - **Fraud and risk checks.** Payments are blocked without explicit shopper approval, on velocity abuse (three or more orders in ten minutes), and when a payment is far beyond budget or uses an unknown coupon.
 - **Idempotent checkout.** Every order requires an `Idempotency-Key` header. Retries return the same order instead of charging twice.
 - **PayPal Orders v2 (Sandbox).** Create, capture and webhook handling. Runs in mock mode until sandbox credentials are set.
 - **Insights.** Spend by category, budget used, orders and search history per session.
+- **Light/dark mode.** A toggle in the top bar persists the choice and applies it before first paint (no flash).
+- **CI.** GitHub Actions runs the backend test suite and a frontend typecheck + build on every push and PR.
 
 > [!NOTE]
 > PayPal Sandbox and Gemini are implemented but need team credentials to run live. Without them the app uses mock checkout and rule-based parsing, which is fully testable.
@@ -88,7 +93,7 @@ The layers below match the team's design. The "as built" column notes where the 
 | Database | PostgreSQL (Neon) | SQLAlchemy. PostgreSQL in production, SQLite locally |
 | LLM | Gemini / OpenAI | Gemini first, OpenAI fallback, rules last |
 | Payments | PayPal REST API | PayPal Orders v2 (Sandbox), mock mode without credentials |
-| Discovery | Vector search (pgvector / Qdrant) | Spec-based matching over a demo catalog. Embeddings are a later step |
+| Discovery | Vector search (pgvector / Qdrant) | Spec-based matching over a demo catalog, plus live Google Shopping (India) via SerpApi with a TTL cache. Embeddings are a later step |
 | Cache | Redis | Not used yet. Session state lives in the database |
 | Hosting | Vercel + Render | `render.yaml` included. Frontend deploys to Vercel |
 
@@ -128,6 +133,12 @@ Open http://localhost:3000.
 pytest -q
 ```
 
+**4. Optional live integrations** (add to `.env`, restart the backend)
+
+- `GEMINI_API_KEY` — LLM intent parsing (OpenAI fallback via `OPENAI_API_KEY`)
+- `SERPAPI_API_KEY` — live Google Shopping (India) discovery; check `/api/health` for `live_feed.enabled`
+- `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` — real sandbox checkout instead of mock mode
+
 ## Team setup and secrets
 
 API keys and PayPal Sandbox credentials are shared privately by the team lead. They are never committed.
@@ -142,10 +153,11 @@ Variables: `GEMINI_API_KEY`, `OPENAI_API_KEY`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIEN
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/api/health` | Status and whether PayPal is configured |
-| GET | `/api/products` | Demo catalog |
+| GET | `/api/health` | Status, whether PayPal is configured, and live-feed status |
+| GET | `/api/products` | Catalog (the frontend hydrates its product grid from this) |
 | PUT | `/api/sessions/{id}/budget` | Set the session budget (`{"budget": 150}`) |
 | POST | `/api/search` | `{session_id, query, coupon_code}`. Returns intent, budget, matrix, cart, alternatives, agent trace |
+| POST | `/api/assistant/chat` | `{session_id, message, history, coupon_code}`. Routes to shopping (pipeline) or support (order status) replies |
 | POST | `/api/checkout/create-order` | Header `Idempotency-Key`. Body `{session_id, product_id, coupon_code, approved}`. Returns 403 with reasons if blocked |
 | POST | `/api/checkout/capture` | `{order_id}`. Captures the approved payment |
 | POST | `/api/webhooks/paypal` | Receives `PAYMENT.CAPTURE.COMPLETED` after signature verification |
@@ -171,13 +183,16 @@ app/
   intent.py        Intent agent (Gemini, OpenAI or rules)
   agents.py        Discovery, review, coupon, budget and fraud logic
   cart.py          Ranking and cart pricing
+  serp.py          Live Google Shopping (India) client via SerpApi
   services.py      Checkout, capture, idempotency and insights
   paypal.py        PayPal Orders v2 and webhook verification
   db.py            SQLAlchemy models (sessions, agent runs, orders)
   catalog.py       Demo catalog, reviews and coupons
   config.py        Settings from environment variables
 frontend/          Next.js + TypeScript + Tailwind UI
-tests/             Pytest suite (backend)
+frontend/scripts/  Theme CSS generators (dark/light overrides from source)
+tests/             Pytest suite (24 tests: checkout, assistant, pipeline)
+.github/workflows/ CI (pytest + typecheck + build)
 assets/            Design diagrams and hero images
 render.yaml        Render deployment blueprint
 ```
@@ -189,6 +204,7 @@ render.yaml        Render deployment blueprint
 - [x] **Phase 3: Conversational frontend.** Next.js UI with agent trace, decision matrix and cart.
 - [x] **Phase 4: Cart optimization.** Review trust scoring, coupons, budget intelligence, cheaper alternatives.
 - [x] **Phase 5: PayPal integration.** Orders v2 create and capture, idempotency, approval, webhook verification. Live sandbox test needs team credentials.
+- [x] **Phase 5.5: Full-stack wiring.** Frontend hydrated from the backend catalog and agent pipeline, real checkout flow in the UI, SerpApi live discovery, dark mode, GitHub Actions CI.
 - [ ] **Phase 6: Verification and submission.** Live sandbox checkout test, Gemini live test, hosted deployment, demo video, Devpost submission (see `docs/SUBMISSION.md`).
 
 ## Privacy and responsible AI

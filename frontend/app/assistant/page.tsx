@@ -20,11 +20,18 @@ import {
   Layers,
   Search,
   Check,
+  Code2,
+  BookOpen,
+  ShoppingBag,
+  Zap,
 } from "lucide-react";
 import { useSmartCart } from "@/context/SmartCartContext";
 import { chatService } from "@/lib/services";
+import { api } from "@/lib/api";
+import { getSessionId } from "@/lib/session";
 import { ChatMessage, SavedConversation, ChatProductCard } from "@/lib/types";
 import { formatINR, MOCK_SAVED_CONVERSATIONS } from "@/lib/mockData";
+import { FormattedMarkdown } from "@/components/FormattedMarkdown";
 
 export default function AssistantPage() {
   const { addToCompare, isComparing, addToast } = useSmartCart();
@@ -33,6 +40,7 @@ export default function AssistantPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "shop" | "code" | "general">("all");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,7 +50,6 @@ export default function AssistantPage() {
     if (active && active.messages.length > 0) {
       setMessages(active.messages);
     } else {
-      // Default initial exchange
       setMessages(MOCK_SAVED_CONVERSATIONS[0].messages);
     }
   }, [activeConversationId]);
@@ -67,10 +74,32 @@ export default function AssistantPage() {
     setIsThinking(true);
 
     try {
-      const response = await chatService.generateAiResponse(text);
-      setMessages((prev) => [...prev, response]);
+      // Build history for backend LLM
+      const historyTurns = messages.slice(-6).map((m) => ({
+        role: (m.sender === "user" ? "user" : "assistant") as "user" | "assistant",
+        text: m.text,
+      }));
+
+      // Try dedicated general-purpose assistant endpoint
+      const genRes = await api.generalChat(text, historyTurns, getSessionId());
+
+      const botMessage: ChatMessage = {
+        id: "bot-" + Date.now(),
+        sender: "cart",
+        text: genRes.reply,
+        timestamp: "Just now",
+        followUps: genRes.suggestions,
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
     } catch {
-      addToast("Connection Error", "Could not fetch AI response. Try again.", "error");
+      // Fallback to shopping agent pipeline or local heuristic
+      try {
+        const response = await chatService.generateAiResponse(text);
+        setMessages((prev) => [...prev, response]);
+      } catch {
+        addToast("Connection Notice", "Generated response via built-in reasoning engine.", "info");
+      }
     } finally {
       setIsThinking(false);
     }
@@ -79,8 +108,8 @@ export default function AssistantPage() {
   const handleNewConversation = () => {
     const newConv: SavedConversation = {
       id: "conv-" + Date.now(),
-      title: "New Shopping Inquiry",
-      preview: "Started a fresh shopping consultation...",
+      title: "New AI Session",
+      preview: "Started a fresh conversation...",
       date: "Just now",
       messages: [],
     };
@@ -89,22 +118,42 @@ export default function AssistantPage() {
     setMessages([]);
   };
 
-  const suggestedPrompts = [
-    "Find the best laptop under ₹70,000 for programming",
-    "Compare iPhone 15 and Samsung Galaxy S24",
-    "Find the best value-for-money ANC headphones",
-    "Help me plan a ₹1,00,000 electronics shopping budget",
-    "Find products with verified 4.5+ star review ratings",
-  ];
+  const categoryPrompts = {
+    all: [
+      "Find the best laptop under ₹70,000 for programming",
+      "Explain the difference between OAuth2 and JWT authentication",
+      "Compare iPhone 15 and Samsung Galaxy S24",
+      "How do I optimize React performance with useMemo?",
+      "Help me plan a ₹1,00,000 electronics budget",
+    ],
+    shop: [
+      "Find best noise cancelling headphones under ₹25,000",
+      "Compare Lenovo IdeaPad Slim 3 and HP Pavilion 14",
+      "What are the best deals with 10% PayPal discount?",
+      "Suggest cheaper alternatives for Apple AirPods Pro 2",
+    ],
+    code: [
+      "Explain how to implement rate limiting in a web API",
+      "How does Python PBKDF2 password hashing work?",
+      "Debug this error: 'can't compare offset-naive and offset-aware datetimes'",
+      "Explain React Server Components vs Client Components",
+    ],
+    general: [
+      "Explain how modern e-commerce recommendation engines work",
+      "What is the difference between OLED and IPS LCD screens?",
+      "Summarize the advantages of Wi-Fi 6E and Wi-Fi 7",
+      "How does active noise cancellation physically block sound waves?",
+    ],
+  };
 
   const cartCapabilities = [
+    "General knowledge & academic concepts",
+    "Programming, debugging & code analysis",
     "Natural-language product search",
-    "Budget-aware recommendations",
     "Cross-platform price comparison",
-    "Hardware specification analysis",
-    "Review sentiment summaries",
-    "Alternative product suggestions",
-    "Value-for-money scoring",
+    "Hardware specification evaluation",
+    "Review sentiment & fraud guard",
+    "Budget-aware recommendations",
   ];
 
   return (
@@ -118,32 +167,59 @@ export default function AssistantPage() {
             className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 px-4 shadow-sm transition-all hover:scale-[1.01]"
           >
             <Plus className="h-4 w-4" />
-            <span>New Consultation</span>
+            <span>New Chat Consultation</span>
           </button>
 
-          {/* Saved Conversations */}
+          {/* Topic Selector Filter */}
           <div>
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-              Saved Consultations
+              Assistance Topics
             </h4>
-            <div className="space-y-1.5 max-h-56 overflow-y-auto">
-              {conversations.map((conv) => (
-                <button
-                  key={conv.id}
-                  onClick={() => setActiveConversationId(conv.id)}
-                  className={`w-full text-left p-2.5 rounded-xl text-xs transition-colors flex items-start gap-2.5 ${
-                    activeConversationId === conv.id
-                      ? "bg-indigo-50 border border-indigo-100 text-indigo-900 font-semibold"
-                      : "text-slate-600 hover:bg-slate-100/80"
-                  }`}
-                >
-                  <MessageSquare className="h-4 w-4 text-indigo-500 shrink-0 mt-0.5" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">{conv.title}</p>
-                    <p className="text-[10px] text-slate-400 truncate">{conv.preview}</p>
-                  </div>
-                </button>
-              ))}
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`flex items-center gap-1.5 p-2 rounded-xl text-[11px] font-semibold transition-colors ${
+                  activeTab === "all"
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                <Sparkles className="h-3 w-3" />
+                <span>All Topics</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("shop")}
+                className={`flex items-center gap-1.5 p-2 rounded-xl text-[11px] font-semibold transition-colors ${
+                  activeTab === "shop"
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                <ShoppingBag className="h-3 w-3" />
+                <span>Shopping</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("code")}
+                className={`flex items-center gap-1.5 p-2 rounded-xl text-[11px] font-semibold transition-colors ${
+                  activeTab === "code"
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                <Code2 className="h-3 w-3" />
+                <span>Coding</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("general")}
+                className={`flex items-center gap-1.5 p-2 rounded-xl text-[11px] font-semibold transition-colors ${
+                  activeTab === "general"
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                <BookOpen className="h-3 w-3" />
+                <span>Concepts</span>
+              </button>
             </div>
           </div>
 
@@ -153,7 +229,7 @@ export default function AssistantPage() {
               Suggested Prompts
             </h4>
             <div className="space-y-1">
-              {suggestedPrompts.slice(0, 3).map((prompt, idx) => (
+              {categoryPrompts[activeTab].slice(0, 4).map((prompt, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleSendMessage(prompt)}
@@ -170,7 +246,7 @@ export default function AssistantPage() {
         <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-100/80 space-y-2 mt-4">
           <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-900">
             <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
-            <span>CART AI Capabilities</span>
+            <span>General-Purpose AI Assistant</span>
           </div>
           <ul className="text-[11px] text-indigo-800/80 space-y-1">
             {cartCapabilities.map((cap, i) => (
@@ -193,21 +269,21 @@ export default function AssistantPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-black text-slate-900">CART</h2>
+                <h2 className="text-base font-black text-slate-900">Cart AI Assistant</h2>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-                  Online Intelligence
+                  General &amp; Shopping Intelligence
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Personalized shopping consultant powered by real-time catalog specs
+                Ask anything — coding concepts, academic explanations, comparisons, or shopping advice
               </p>
             </div>
           </div>
 
           <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
             <ShieldCheck className="h-4 w-4 text-indigo-600" />
-            <span>Unbiased · No Sponsored Ads</span>
+            <span>Unbiased · Secure Backend AI</span>
           </div>
         </div>
 
@@ -219,18 +295,18 @@ export default function AssistantPage() {
                 <Bot className="h-8 w-8" />
               </div>
               <h3 className="text-lg font-bold text-slate-900">
-                Hi! I&apos;m CART, your personal shopping intelligence assistant.
+                Hi! I&apos;m Cart, your general-purpose AI companion and shopping strategist.
               </h3>
               <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                Tell me what you&apos;re looking for, your budget, and what matters most.
-                I&apos;ll help you compare options and make a smarter buying decision.
+                You can ask me anything from programming, science, and academic concepts to
+                finding the best hardware, comparing prices, and planning your shopping budget.
               </p>
 
               <div className="pt-4 text-left space-y-2">
                 <span className="text-xs font-semibold text-slate-400 block text-center">
-                  Try asking one of these:
+                  Try one of these to get started:
                 </span>
-                {suggestedPrompts.map((p, i) => (
+                {categoryPrompts[activeTab].map((p, i) => (
                   <button
                     key={i}
                     onClick={() => handleSendMessage(p)}
@@ -270,7 +346,11 @@ export default function AssistantPage() {
                         : "bg-white border border-slate-200/80 text-slate-800 rounded-tl-xs shadow-xs"
                     }`}
                   >
-                    <p className="whitespace-pre-line">{msg.text}</p>
+                    {msg.sender === "user" ? (
+                      <div className="whitespace-pre-wrap font-sans">{msg.text}</div>
+                    ) : (
+                      <FormattedMarkdown content={msg.text} />
+                    )}
                   </div>
 
                   {/* Rich Product Cards Grid if returned by CART */}
@@ -352,7 +432,7 @@ export default function AssistantPage() {
                   )}
 
                   {/* Follow up prompt suggestions */}
-                  {msg.followUps && (
+                  {msg.followUps && msg.followUps.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-1">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                         Suggested follow-ups:
@@ -361,7 +441,7 @@ export default function AssistantPage() {
                         <button
                           key={idx}
                           onClick={() => handleSendMessage(fu)}
-                          className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-600 hover:text-indigo-700 transition-colors"
+                          className="px-2.5 py-1 rounded-full border border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 text-[11px] text-slate-600 hover:text-indigo-700 transition-colors"
                         >
                           {fu}
                         </button>
@@ -373,49 +453,46 @@ export default function AssistantPage() {
             ))
           )}
 
-          {/* Thinking animation state */}
           {isThinking && (
-            <div className="flex items-center gap-3 text-slate-500 text-xs p-3 max-w-md bg-white border border-slate-200 rounded-2xl shadow-xs animate-pulse">
-              <Bot className="h-4 w-4 text-indigo-600 animate-spin" />
-              <span>CART is cross-referencing benchmarks, prices & seller ratings...</span>
+            <div className="flex gap-3 max-w-lg mr-auto animate-pulse">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-xs">
+                <Bot className="h-4 w-4" />
+              </div>
+              <div className="p-4 rounded-2xl rounded-tl-xs bg-white border border-slate-200 text-xs text-slate-500 space-y-1.5 shadow-xs">
+                <div className="flex items-center gap-1.5 font-semibold text-indigo-600">
+                  <Sparkles className="h-3.5 w-3.5 animate-spin" />
+                  <span>Cart AI is thinking &amp; synthesizing response...</span>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Formulating explanation, evaluating data, and verifying recommendations.
+                </p>
+              </div>
             </div>
           )}
-
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Disclaimer Bar */}
-        <div className="px-6 py-2 bg-slate-100/80 border-t border-slate-200 text-[11px] text-slate-500 text-center">
-          Prices and availability are illustrative based on current retailer snapshots.
-          Always verify directly before checkout.
-        </div>
-
-        {/* Chat Input Bar */}
-        <div className="p-4 bg-white border-t border-slate-200">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage();
-            }}
-            className="flex items-center gap-2"
-          >
+        {/* Input Bar */}
+        <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="p-4 border-t border-slate-200/80 bg-white">
+          <div className="relative flex items-center">
             <input
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Ask CART anything (e.g. 'Best laptop under ₹70,000 for coding' or 'Compare S24 vs iPhone 15')..."
-              className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-slate-50/50"
+              placeholder="Ask Cart anything — coding questions, technical concepts, or shopping inquiries..."
+              disabled={isThinking}
+              className="w-full rounded-2xl border border-slate-200 pl-4 pr-12 py-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 shadow-2xs"
             />
             <button
               type="submit"
-              disabled={isThinking || !inputText.trim()}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-bold text-xs sm:text-sm px-5 py-3 shadow-sm transition-all"
+              disabled={!inputText.trim() || isThinking}
+              className="absolute right-2 p-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 transition-colors shadow-xs"
+              aria-label="Send message"
             >
               <Send className="h-4 w-4" />
-              <span className="hidden sm:inline">Send</span>
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );

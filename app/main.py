@@ -8,13 +8,15 @@ Interactive docs: http://localhost:8000/docs
 from __future__ import annotations
 
 from collections.abc import Iterator
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app import assistant, paypal, services
+from app import assistant, auth_router, community_router, paypal, services, stats_router, stores_router
 from app.catalog import PRODUCTS
 from app.config import settings
 from app.db import SessionLocal, init_db
@@ -33,9 +35,21 @@ app = FastAPI(title="SmartCart AI", version="0.2.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Ensure uploads directory is created and mounted for community image attachments
+upload_path = Path("uploads")
+upload_path.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(upload_path)), name="uploads")
+
+# Include modular feature routers
+app.include_router(auth_router.router)
+app.include_router(community_router.router)
+app.include_router(stores_router.router)
+app.include_router(stats_router.router)
 
 
 @app.on_event("startup")
@@ -69,14 +83,20 @@ class CaptureRequest(BaseModel):
 
 class ChatTurn(BaseModel):
     role: str = Field(pattern="^(user|assistant)$")
-    text: str = Field(max_length=1000)
+    text: str = Field(max_length=2000)
 
 
 class ChatRequest(BaseModel):
     session_id: str = Field(min_length=8, max_length=64)
-    message: str = Field(min_length=2, max_length=500)
-    history: list[ChatTurn] = Field(default_factory=list, max_length=12)
+    message: str = Field(min_length=1, max_length=1000)
+    history: list[ChatTurn] = Field(default_factory=list, max_length=20)
     coupon_code: str | None = None
+
+
+class GeneralChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=2000)
+    history: list[ChatTurn] = Field(default_factory=list, max_length=20)
+    session_id: str | None = None
 
 
 # ---------- Routes ----------
@@ -132,6 +152,21 @@ async def assistant_chat(req: ChatRequest, db: Session = Depends(get_db)) -> dic
         message=req.message.strip(),
         history=[t.model_dump() for t in req.history],
         coupon_code=req.coupon_code,
+    )
+
+
+@app.post("/api/assistant/general-chat")
+async def assistant_general_chat(req: GeneralChatRequest, db: Session = Depends(get_db)) -> dict:
+    """Dedicated general-purpose chatbot interface for Cart AI.
+    Handles general knowledge, coding, technical concepts, academic questions, and shopping advice.
+    """
+    if not req.message.strip():
+        raise HTTPException(status_code=400, detail="Message is empty")
+    return await assistant.general_chat(
+        db,
+        message=req.message.strip(),
+        history=[t.model_dump() for t in req.history],
+        session_id=req.session_id,
     )
 
 

@@ -139,8 +139,10 @@ export interface ShoppingHistoryEvent {
 }
 
 export interface UserProfile {
+  id?: string;
   name: string;
   email: string;
+  phone?: string;
   avatarUrl?: string;
   preferredRetailers: Retailer[];
   preferredCategories: ProductCategory[];
